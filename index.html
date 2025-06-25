@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="es-HN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Henmir - Conectando Talento</title>
+    
+    <!-- Dependencias Externas (CSS) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Hoja de Estilos Local -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+            <div class="container">
+                <a class="navbar-brand fw-bold text-primary" href="#" onclick="navigateTo('page-home')"><i class="bi bi-briefcase-fill"></i> Henmir</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul id="main-nav-links" class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="navigateTo('page-home')">Inicio</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="navigateTo('page-vacancies')">Vacantes</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" onclick="navigateTo('page-about')">Sobre Nosotros</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#cvModal">Registrar CV</a></li>
+                    </ul>
+                    <div id="auth-section" class="ms-auto"></div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL DE PÁGINAS -->
+    <main id="app" class="container my-4">
+        <!-- PÁGINA DE INICIO -->
+        <div id="page-home" class="page">
+            <section class="hero-section rounded mb-5" id="hero-section">
+                <div class="container">
+                    <h1 class="display-4 fw-bold">Tu próximo reto profesional comienza aquí.</h1>
+                    <p class="lead">Explora cientos de oportunidades en las mejores empresas de Honduras.</p>
+                </div>
+            </section>
+            <section id="recent-posts">
+                <h2 class="text-center mb-4">Posts Recientes</h2>
+                <div class="row" id="posts-container">
+                    <div class="spinner-container"><div class="spinner-border text-primary"></div></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PÁGINA DE VACANTES -->
+        <div id="page-vacancies" class="page">
+             <h1 class="mb-4">Vacantes Activas</h1>
+             <div class="row" id="vacancies-list">
+                <div class="spinner-container"><div class="spinner-border text-primary"></div></div>
+             </div>
+        </div>
+
+        <!-- PÁGINA SOBRE NOSOTROS -->
+        <div id="page-about" class="page">
+            <div class="p-5 mb-4 bg-light rounded-3">
+                <h1 class="display-5 fw-bold">Nuestra Misión</h1>
+                <p class="fs-4" id="mision-text"><div class="spinner-border spinner-border-sm"></div></p>
+            </div>
+            <div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
+                <h1 class="display-5 fw-bold">Nuestra Visión</h1>
+                <p class="fs-4" id="vision-text"><div class="spinner-border spinner-border-sm"></div></p>
+            </div>
+        </div>
+
+        <!-- PÁGINA DE LOGIN -->
+        <div id="page-login" class="page">
+            <div class="row justify-content-center mt-5">
+                <div class="col-md-6 col-lg-5">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4 p-md-5">
+                            <h2 class="text-center mb-4">Iniciar Sesión</h2>
+                            <form id="login-form">
+                                <div class="mb-3">
+                                    <label for="login-identidad" class="form-label">Usuario / Identidad</label>
+                                    <input type="text" class="form-control" id="login-identidad" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="login-password" class="form-label">Contraseña</label>
+                                    <input type="password" class="form-control" id="login-password" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">Ingresar</button>
+                                </div>
+                            </form>
+                            <div id="login-status" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PANELES DE USUARIO Y ADMIN (CONTENEDORES VACÍOS) -->
+        <div id="page-candidate-profile" class="page"></div>
+        <div id="page-admin-dashboard" class="page"></div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="container text-center text-muted py-4 mt-5 border-top">
+        <p>&copy; 2025 Henmir. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- MODAL PARA REGISTRAR CV CON GOOGLE FORMS -->
+    <div class="modal fade" id="cvModal" tabindex="-1" aria-labelledby="cvModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cvModalLabel">Registra tu Hoja de Vida</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="height: 75vh;">
+                    <iframe id="google-form-iframe" src="" width="100%" height="100%" frameborder="0">Cargando…</iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL DEL CHATBOT -->
+    <div class="chat-icon" data-bs-toggle="modal" data-bs-target="#chatModal"><i class="bi bi-chat-dots-fill"></i></div>
+    <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-bottom-end">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="chatModalLabel"><i class="bi bi-robot"></i> Asistente Virtual</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="chat-body" class="modal-body" style="height: 300px; overflow-y: auto;"></div>
+                <div class="modal-footer">
+                    <div class="input-group">
+                        <input type="text" id="chat-input" class="form-control" placeholder="Escribe tu pregunta...">
+                        <button class="btn btn-primary" id="send-chat-btn"><i class="bi bi-send-fill"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dependencias Externas (JS) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Script Local de la Aplicación -->
+    <script src="app.js"></script>
+</body>
+</html>
