@@ -57,6 +57,12 @@ window.navigateTo = function(pageId) {
         if (pageId === 'page-posts-feed') {
             renderPostsFeed(); // Asegura que el feed de posts se cargue cuando se navega a esta página
         }
+        // NUEVO: Cargar contenido legal si se navega a la página legal
+        if (pageId === 'page-legal') {
+            // No recargamos aquí, ya que renderPublicPages lo hace al inicio
+            // y renderLegalPage solo muestra lo que ya está en webContent.
+            // Si el sitio se carga dinámicamente o si el admin cambia esto, se actualizará al recargar la página principal.
+        }
     }
     // Cierra el menú de navegación de Bootstrap en móviles si está abierto
     const navCollapse = document.getElementById('navbarNav');
@@ -155,12 +161,17 @@ function showConfirm(title, message) {
 // --- RENDERIZADO DE CONTENIDO ---
 
 // Función principal para poblar todas las secciones públicas
+let globalWebContent = {}; // Almacenar el contenido web globalmente
+
 function renderPublicPages(publicData) {
     const { vacancies, posts, webContent } = publicData;
+    globalWebContent = webContent; // Almacenar para uso en otras funciones
+
     renderHeroCarousel(webContent);
     renderHomePagePosts(posts);
     renderVacanciesPage(vacancies); 
-    renderAboutPage(webContent); // Actualizado para cargar contenido de contacto
+    renderAboutPage(webContent); 
+    renderLegalPage(webContent); // ¡NUEVO! Renderizar contenido legal
 }
 
 function renderHeroCarousel(webContent) {
@@ -228,7 +239,7 @@ function renderVacanciesPage(vacancies) {
                         <p class="card-text mb-1"><i class="bi bi-geo-alt-fill"></i> ${v.ciudad}</p>
                         <p class="card-text text-truncate-3">${v.descripcion ? v.descripcion.substring(0, 150) + '...' : 'Sin descripción.'}</p>
                         <p class="card-text text-truncate-2"><strong>Requisitos:</strong> ${v.requisitos ? v.requisitos.substring(0, 100) + '...' : 'No especificados.'}</p>
-                        <button class="btn btn-sm btn-outline-primary mt-auto apply-vacancy-btn" data-bs-toggle="modal" data-bs-target="#cvModal">Postular Ahora</button>
+                        <button class="btn btn-sm btn-outline-primary mt-auto apply-vacancy-btn">Postular Ahora</button>
                     </div>
                 </div>
             </div>`).join('');
@@ -236,12 +247,8 @@ function renderVacanciesPage(vacancies) {
         // Adjuntar event listeners a los botones "Postular Ahora"
         document.querySelectorAll('.apply-vacancy-btn').forEach(button => {
             button.addEventListener('click', (e) => {
-                const cvModal = new bootstrap.Modal(document.getElementById('cvModal'));
-                const googleFormIframe = document.getElementById('googleFormIframe');
-                if (googleFormIframe) {
-                    googleFormIframe.src = GOOGLE_FORM_URL; // Carga la URL del Google Form
-                }
-                cvModal.show(); // Muestra el modal
+                // Abre el formulario de Google en una nueva pestaña, no en un modal con iframe.
+                window.open(GOOGLE_FORM_URL, '_blank');
             });
         });
 
@@ -285,6 +292,28 @@ function renderAboutPage(webContent) {
     }
 }
 
+// ¡NUEVO! Función para renderizar la página de Términos y Política de Privacidad
+function renderLegalPage(webContent) {
+    const terminosText = document.getElementById('terminos-condiciones-text');
+    const privacidadText = document.getElementById('politica-privacidad-text');
+
+    if (terminosText) {
+        terminosText.innerHTML = ''; // Limpiar spinner
+        // Usamos innerHTML si queremos que el texto tenga saltos de línea y formateo simple.
+        // Convertimos '\n' en '<br>' para saltos de línea si el contenido viene plano.
+        terminosText.innerHTML = (webContent && webContent.terminos_condiciones) ? 
+            webContent.terminos_condiciones.replace(/\n/g, '<br>') : 
+            'Contenido de Términos y Condiciones no disponible.';
+    }
+    if (privacidadText) {
+        privacidadText.innerHTML = ''; // Limpiar spinner
+        privacidadText.innerHTML = (webContent && webContent.politica_privacidad) ? 
+            webContent.politica_privacidad.replace(/\n/g, '<br>') : 
+            'Contenido de Política de Privacidad no disponible.';
+    }
+}
+
+
 async function renderPostsFeed() {
     const postsFeedContainer = document.getElementById('posts-feed-container');
     if (!postsFeedContainer) return;
@@ -308,13 +337,12 @@ async function renderPostsFeed() {
     }
 }
 
-async function renderCandidateProfile(identity) {
+async function renderCandidateProfile(profileData) {
     const container = document.getElementById('page-candidate-profile');
     if (!container) return;
-    showSpinner(container);
-    const result = await apiCall(`/profile/${identity}`);
-    if (result.success && result.data && result.data.infoBasica) {
-        const { infoBasica, postulaciones, entrevistas } = result.data;
+
+    if (profileData && profileData.infoBasica) {
+        const { infoBasica, postulaciones, entrevistas } = profileData;
         const postulacionesHTML = postulaciones && postulaciones.length > 0 ? postulaciones.map(p => `
             <tr>
                 <td>${p.vacanteId || 'N/A'}</td>
@@ -339,7 +367,15 @@ async function renderCandidateProfile(identity) {
                 <h3 class="mt-5">Próximas Entrevistas</h3>${entrevistasHTML}
             </div>`;
     } else {
-        container.innerHTML = `<div class="candidate-panel text-center"><p class="fs-4 text-danger">Error</p><p class="text-muted">${result.error || 'No se pudo encontrar el perfil solicitado.'}</p><button class="btn btn-primary mt-3" onclick="navigateTo('page-login-selection')">Volver a Intentar</button></div>`;
+        // Mensaje de error mejorado
+        container.innerHTML = `
+            <div class="candidate-panel text-center p-5">
+                <i class="bi bi-exclamation-triangle-fill text-danger display-1 mb-3"></i>
+                <h2 class="text-danger mb-3">¡Lo Sentimos!</h2>
+                <p class="fs-4 text-muted">No pudimos encontrar un perfil de candidato con el número de identidad proporcionado.</p>
+                <p class="text-muted">Por favor, verifica el número e intenta de nuevo. Si crees que hay un error, contacta a Henmir.</p>
+                <button class="btn btn-primary mt-4" onclick="navigateTo('page-candidate-login')">Volver a Intentar</button>
+            </div>`;
     }
 }
 
@@ -351,8 +387,8 @@ async function renderAdminDashboard() {
             <h1>Panel de Administración</h1><p>Bienvenido. Selecciona una sección para gestionar.</p>
             <div class="d-grid gap-2 d-md-flex">
                 <button class="btn btn-primary" onclick="showAdminContent('vacancies')"><i class="bi bi-card-list"></i> Gestionar Vacantes</button>
-                <button class="btn btn-secondary" onclick="showAdminContent('posts')"><i class="bi bi-file-post"></i> Gestionar Posts</button>
-                <button class="btn btn-info text-white" onclick="showAdminContent('web-content')"><i class="bi bi-gear-fill"></i> Contenido Web</button>
+                <button class="btn btn-secondary" onclick="showAdminContent('posts')"><i class="bi bi-file-post"></i> Gestionar Noticias y Blog</button>
+                <button class="btn btn-info text-white" onclick="showAdminContent('web-content')"><i class="bi bi-gear-fill"></i> Contenido General del Sitio</button>
             </div><hr><div id="admin-content-area" class="mt-4"><p class="text-muted">Selecciona una opción para comenzar.</p></div>
         </div>`;
 }
@@ -360,7 +396,7 @@ async function renderAdminDashboard() {
 function showAdminContent(section) {
     if (section === 'vacancies') renderAdminVacanciesPanel();
     else if (section === 'posts') renderAdminPostsPanel();
-    else if (section === 'web-content') renderAdminWebPanel(); // Nueva función para el panel de contenido web
+    else if (section === 'web-content') renderAdminWebPanel(); 
 }
 
 function renderAdminVacanciesPanel() {
@@ -406,8 +442,8 @@ function renderAdminPostsPanel() {
         <div class="card mb-4"><div class="card-header"><h3><i class="bi bi-plus-circle"></i> Crear Nuevo Post</h3></div>
         <div class="card-body"><form id="create-post-form">
             <div class="mb-3"><label class="form-label">Título</label><input type="text" id="post-titulo" class="form-control" required></div>
-            <div class="mb-3"><label class="form-label">URL de Imagen</label><input type="text" id="post-imagen" class="form-control" placeholder="https://ejemplo.com/imagen.jpg"></div>
-            <div class="mb-3"><label class="form-label">Contenido</label><textarea id="post-contenido" class="form-control" rows="5"></textarea></div>
+            <div class="mb-3"><label class="form-label">URL de Imagen (Para portadas de noticias)</label><input type="text" id="post-imagen" class="form-control" placeholder="https://ejemplo.com/imagen.jpg"></div>
+            <div class="mb-3"><label class="form-label">Contenido del Post (Soporta saltos de línea)</label><textarea id="post-contenido" class="form-control" rows="5"></textarea></div>
             <button type="submit" class="btn btn-success">Guardar Post</button>
         </form></div></div>
         <h3>Posts en el Sistema</h3><div class="table-responsive"><table class="table table-striped table-hover"><thead class="table-light"><tr><th>Título</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody id="admin-posts-list"></tbody></table></div>`;
@@ -435,30 +471,34 @@ async function fetchAndRenderAdminPosts() {
 // Panel de Administración de Contenido Web
 async function renderAdminWebPanel() {
     const container = document.getElementById('admin-content-area');
-    showSpinner(container); // Mostrar spinner mientras carga los datos existentes
+    showSpinner(container); 
 
-    const publicDataResult = await apiCall('/public-data'); // Obtener datos actuales del contenido web
-    let webContent = {};
-    if (publicDataResult.success && publicDataResult.data && publicDataResult.data.webContent) {
-        webContent = publicDataResult.data.webContent;
-    }
+    // Usar el contenido web que ya se cargó globalmente al inicio
+    let webContent = globalWebContent; 
 
     container.innerHTML = `
-        <div class="card mb-4"><div class="card-header"><h3><i class="bi bi-gear-fill"></i> Gestionar Contenido Web</h3></div>
+        <div class="card mb-4"><div class="card-header"><h3><i class="bi bi-gear-fill"></i> Editar Contenido Principal del Sitio</h3></div>
         <div class="card-body"><form id="update-web-content-form">
-            <h4>Contenido General</h4>
-            <div class="mb-3"><label class="form-label">Misión</label><textarea id="web-mision" class="form-control" rows="3">${webContent.texto_mision || ''}</textarea></div>
-            <div class="mb-3"><label class="form-label">Visión</label><textarea id="web-vision" class="form-control" rows="3">${webContent.texto_vision || ''}</textarea></div>
-            <div class="mb-3"><label class="form-label">Imagen Hero 1 URL</label><input type="text" id="web-hero-img-1" class="form-control" value="${webContent.imagen_hero_1 || ''}"></div>
-            <div class="mb-3"><label class="form-label">Imagen Hero 2 URL</label><input type="text" id="web-hero-img-2" class="form-control" value="${webContent.imagen_hero_2 || ''}"></div>
+            <h4>Sección "Sobre Nosotros"</h4>
+            <div class="mb-3"><label class="form-label">Texto de Nuestra Misión</label><textarea id="web-mision" class="form-control" rows="3">${webContent.texto_mision || ''}</textarea></div>
+            <div class="mb-3"><label class="form-label">Texto de Nuestra Visión</label><textarea id="web-vision" class="form-control" rows="3">${webContent.texto_vision || ''}</textarea></div>
+            
+            <h4 class="mt-4">Carrusel de Imágenes Principales (Hero Section)</h4>
+            <p class="text-muted">Introduce URLs de imágenes de alta resolución. Se mostrarán secuencialmente.</p>
+            <div class="mb-3"><label class="form-label">URL de Imagen Hero #1</label><input type="text" id="web-hero-img-1" class="form-control" value="${webContent.imagen_hero_1 || ''}" placeholder="https://ejemplo.com/imagen1.jpg"></div>
+            <div class="mb-3"><label class="form-label">URL de Imagen Hero #2</label><input type="text" id="web-hero-img-2" class="form-control" value="${webContent.imagen_hero_2 || ''}" placeholder="https://ejemplo.com/imagen2.jpg"></div>
             
             <h4 class="mt-4">Información de Contacto</h4>
-            <div class="mb-3"><label class="form-label">Dirección</label><input type="text" id="web-contacto-direccion" class="form-control" value="${webContent.contacto_direccion || ''}"></div>
-            <div class="mb-3"><label class="form-label">Teléfono</label><input type="text" id="web-contacto-telefono" class="form-control" value="${webContent.contacto_telefono || ''}"></div>
-            <div class="mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="web-contacto-email" class="form-control" value="${webContent.contacto_email || ''}"></div>
-            <div class="mb-3"><label class="form-label">Horario de Atención</label><input type="text" id="web-contacto-horario" class="form-control" value="${webContent.contacto_horario || ''}"></div>
+            <div class="mb-3"><label class="form-label">Dirección Física</label><input type="text" id="web-contacto-direccion" class="form-control" value="${webContent.contacto_direccion || ''}" placeholder="Ej: Blvd. Morazán, Tegucigalpa"></div>
+            <div class="mb-3"><label class="form-label">Número de Teléfono</label><input type="text" id="web-contacto-telefono" class="form-control" value="${webContent.contacto_telefono || ''}" placeholder="Ej: +504 22XX-XXXX"></div>
+            <div class="mb-3"><label class="form-label">Correo Electrónico de Contacto</label><input type="email" id="web-contacto-email" class="form-control" value="${webContent.contacto_email || ''}" placeholder="Ej: info@henmir.com"></div>
+            <div class="mb-3"><label class="form-label">Horario de Atención</label><input type="text" id="web-contacto-horario" class="form-control" value="${webContent.contacto_horario || ''}" placeholder="Ej: Lunes a Viernes, 8:00 AM - 5:00 PM"></div>
 
-            <button type="submit" class="btn btn-success">Guardar Cambios</button>
+            <h4 class="mt-4">Páginas Legales</h4>
+            <div class="mb-3"><label class="form-label">Contenido de Términos y Condiciones</label><textarea id="web-terminos-condiciones" class="form-control" rows="7">${webContent.terminos_condiciones || ''}</textarea></div>
+            <div class="mb-3"><label class="form-label">Contenido de Política de Privacidad</label><textarea id="web-politica-privacidad" class="form-control" rows="7">${webContent.politica_privacidad || ''}</textarea></div>
+
+            <button type="submit" class="btn btn-success">Guardar Cambios del Sitio</button>
         </form></div></div>`;
     
     document.getElementById('update-web-content-form').addEventListener('submit', handleUpdateWebContent);
@@ -471,21 +511,19 @@ async function handleUpdateWebContent(event) {
         { key: 'texto_vision', value: document.getElementById('web-vision').value },
         { key: 'imagen_hero_1', value: document.getElementById('web-hero-img-1').value },
         { key: 'imagen_hero_2', value: document.getElementById('web-hero-img-2').value },
-        // Nuevas claves para la información de contacto
         { key: 'contacto_direccion', value: document.getElementById('web-contacto-direccion').value },
         { key: 'contacto_telefono', value: document.getElementById('web-contacto-telefono').value },
         { key: 'contacto_email', value: document.getElementById('web-contacto-email').value },
-        { key: 'contacto_horario', value: document.getElementById('web-contacto-horario').value }
+        { key: 'contacto_horario', value: document.getElementById('web-contacto-horario').value },
+        { key: 'terminos_condiciones', value: document.getElementById('web-terminos-condiciones').value }, // ¡NUEVO CAMPO!
+        { key: 'politica_privacidad', value: document.getElementById('web-politica-privacidad').value } // ¡NUEVO CAMPO!
     ].filter(item => item.value !== null && item.value !== undefined); 
 
     const result = await apiCall('/web-config', 'POST', { updates: updates });
     if(result.success) {
-        showAlert('Éxito', 'Contenido web actualizado con éxito.', 'success');
-        // Recargar datos públicos para reflejar los cambios en el frontend
-        const publicDataResult = await apiCall('/public-data');
-        if (publicDataResult.success) {
-            renderPublicPages(publicDataResult.data);
-        }
+        showAlert('Éxito', 'Contenido web actualizado con éxito. Refrescando página...', 'success', () => {
+            window.location.reload(); 
+        });
     } else { 
         showAlert('Error', `Error al actualizar el contenido web: ${result.error}`, 'danger'); 
     }
@@ -493,12 +531,28 @@ async function handleUpdateWebContent(event) {
 
 
 async function handleCandidateLogin(event) {
-    event.preventDefault();
+    event.preventDefault(); // ¡PREVENIR LA RECARGA DE LA PÁGINA!
     const statusDiv = document.getElementById('candidate-login-status');
-    statusDiv.innerHTML = '<div class="spinner-border spinner-border-sm"></div>';
+    statusDiv.innerHTML = '<div class="d-flex align-items-center"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div><span>Buscando perfil...</span></div>';
+    
     const identity = document.getElementById('candidate-identity').value.trim();
-    navigateTo('page-candidate-profile');
-    await renderCandidateProfile(identity);
+    if (!identity) {
+        statusDiv.innerHTML = '<div class="alert alert-warning p-2">Por favor, ingresa un número de identidad.</div>';
+        return;
+    }
+
+    // Navegar y renderizar el perfil solo DESPUÉS de obtener los datos
+    const result = await apiCall(`/profile/${identity}`);
+    statusDiv.innerHTML = ''; // Limpiar spinner o mensaje de búsqueda
+    
+    if (result.success) {
+        navigateTo('page-candidate-profile');
+        renderCandidateProfile(result.data); // Pasar directamente los datos del perfil
+    } else {
+        // Si hay un error (ej. 404 No encontrado), navegar a la página de perfil con un mensaje de error claro
+        navigateTo('page-candidate-profile'); 
+        renderCandidateProfile(null); // Pasar null para que renderCandidateProfile muestre el error adecuado
+    }
 }
 
 async function handleAdminLogin(event) {
@@ -757,4 +811,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Asegurarse de que los event listeners de formularios siempre estén adjuntos
     document.getElementById('candidate-login-form')?.addEventListener('submit', handleCandidateLogin);
     document.getElementById('admin-login-form')?.addEventListener('submit', handleAdminLogin);
+
+    // --- Limpiar el backdrop del modal de postulación ---
+    // Este código ahora se asegura de que no haya un modal-backdrop flotando
+    // Si bien GOOGLE_FORM_URL ahora abre en nueva pestaña,
+    // este listener es una buena práctica general para cualquier modal en tu app.
+    const cvModalElement = document.getElementById('cvModal');
+    if (cvModalElement) {
+        cvModalElement.addEventListener('hidden.bs.modal', function () {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = ''; 
+            document.body.style.paddingRight = ''; 
+        });
+    }
 });

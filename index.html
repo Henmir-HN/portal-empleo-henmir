@@ -77,42 +77,20 @@
                     <p><div class="spinner-border spinner-border-sm text-secondary"></div> Cargando información de contacto...</p>
                 </div>
             </div>
+        </div>
 
-            <hr class="my-5">
-
-            <!-- Sección de Política de Privacidad -->
-            <div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
-                <h1 class="display-5 fw-bold">Política de Privacidad</h1>
-                <div class="fs-5">
-                    <p>En Henmir, la privacidad de nuestros usuarios es de suma importancia. Esta política detalla cómo recopilamos, usamos y protegemos la información personal que nos proporcionas a través de nuestro portal.</p>
-                    <ul>
-                        <li><strong>Recopilación de Información:</strong> Recopilamos información que nos proporcionas directamente (como tu número de identidad para consultar postulaciones) y datos no personales relacionados con el uso del sitio.</li>
-                        <li><strong>Uso de la Información:</strong> Utilizamos tu información para conectar tu perfil con oportunidades laborales, mejorar nuestros servicios, y comunicarnos contigo sobre vacantes relevantes o actualizaciones del portal.</li>
-                        <li><strong>Protección de Datos:</strong> Implementamos medidas de seguridad robustas para proteger tu información contra accesos no autorizados, alteraciones, divulgaciones o destrucciones. Tus datos se almacenan de forma segura y se accede a ellos con estrictos controles.</li>
-                        <li><strong>Compartir Información:</strong> Tu información personal solo se compartirá con empresas empleadoras con tu consentimiento explícito, y únicamente con el propósito de tu postulación a una vacante. No vendemos ni alquilamos tus datos personales a terceros.</li>
-                        <li><strong>Derechos del Usuario:</strong> Tienes derecho a acceder, corregir o eliminar tu información personal en cualquier momento. Si deseas ejercer estos derechos, por favor contáctanos.</li>
-                    </ul>
-                    <p class="text-muted">Al utilizar el portal Henmir, aceptas los términos de esta política de privacidad.</p>
+        <!-- PÁGINA DE TÉRMINOS Y POLÍTICA DE PRIVACIDAD -->
+        <div id="page-legal" class="page">
+            <div class="p-5 mb-4 bg-light rounded-3">
+                <h1 class="display-5 fw-bold mb-4">Términos y Condiciones</h1>
+                <div id="terminos-condiciones-text" class="fs-5" style="white-space: pre-wrap;">
+                    <div class="spinner-border spinner-border-sm text-secondary"></div> Cargando términos y condiciones...
                 </div>
             </div>
-
-            <hr class="my-5">
-
-            <!-- Sección de Términos y Condiciones -->
-            <div class="p-5 mb-4 bg-light rounded-3">
-                <h1 class="display-5 fw-bold">Términos y Condiciones del Servicio</h1>
-                <div class="fs-5">
-                    <p>Bienvenido al portal de empleos de Henmir. Al utilizar nuestros servicios, aceptas cumplir con los siguientes términos y condiciones:</p>
-                    <ul>
-                        <li><strong>Elegibilidad:</strong> Debes tener al menos 18 años de edad para utilizar nuestros servicios de postulación de empleo.</li>
-                        <li><strong>Uso del Servicio:</strong> El portal de Henmir está diseñado para facilitar la conexión entre buscadores de empleo y empresas. Te comprometes a usar el servicio de manera lícita, ética y de buena fe.</li>
-                        <li><strong>Información del Usuario:</strong> Eres responsable de la exactitud y veracidad de la información que proporcionas en tu perfil y postulaciones. La información falsa o engañosa puede resultar en la suspensión o terminación de tu cuenta.</li>
-                        <li><strong>Contenido del Usuario:</strong> Eres el único responsable del contenido (currículum, cartas de presentación, etc.) que subas a través del formulario de postulación. Asegúrate de que no infrinja derechos de terceros ni contenga material ilegal.</li>
-                        <li><strong>Propiedad Intelectual:</strong> Todos los contenidos y materiales del portal Henmir (diseño, texto, gráficos, logotipos) son propiedad de Henmir o de sus licenciantes y están protegidos por las leyes de propiedad intelectual.</li>
-                        <li><strong>Limitación de Responsabilidad:</strong> Henmir actúa como un intermediario y no garantiza la obtención de un empleo ni la veracidad de todas las ofertas publicadas por terceros. No somos responsables por las interacciones entre usuarios o entre usuarios y empleadores.</li>
-                        <li><strong>Modificaciones:</strong> Henmir se reserva el derecho de modificar o actualizar estos términos y condiciones en cualquier momento. Se te notificará sobre cambios significativos.</li>
-                    </ul>
-                    <p class="text-muted">Si no estás de acuerdo con estos términos, te pedimos que no utilices nuestro portal.</p>
+            <div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
+                <h1 class="display-5 fw-bold mb-4">Política de Privacidad</h1>
+                <div id="politica-privacidad-text" class="fs-5" style="white-space: pre-wrap;">
+                    <div class="spinner-border spinner-border-sm text-secondary"></div> Cargando política de privacidad...
                 </div>
             </div>
         </div>
@@ -168,6 +146,10 @@
 
     <footer class="container text-center text-muted py-4 mt-5 border-top">
         <p>&copy; 2025 Henmir. Todos los derechos reservados.</p>
+        <p class="mt-2">
+            <a href="#" onclick="navigateTo('page-legal'); return false;" class="text-muted text-decoration-none me-3">Términos y Condiciones</a>
+            <a href="#" onclick="navigateTo('page-legal'); return false;" class="text-muted text-decoration-none">Política de Privacidad</a>
+        </p>
     </footer>
 
     <!-- Modal de Alerta/Confirmación Personalizado -->
@@ -181,22 +163,6 @@
                 <div class="modal-body" id="customAlertConfirmModalBody"></div>
                 <div class="modal-footer" id="customAlertConfirmModalFooter">
                     <!-- Los botones se añadirán dinámicamente aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para el Formulario de Postulación -->
-    <div class="modal fade" id="cvModal" tabindex="-1" aria-labelledby="cvModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl"> <!-- Tamaño XL para mejor visualización -->
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="cvModalLabel">Formulario de Postulación</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-0" style="min-height: 70vh;">
-                    <!-- El iframe para el Google Form se cargará aquí -->
-                    <iframe id="googleFormIframe" src="" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0">Cargando...</iframe>
                 </div>
             </div>
         </div>

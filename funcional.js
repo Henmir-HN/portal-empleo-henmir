@@ -313,12 +313,8 @@ async function renderCandidateProfile(identity) {
     if (!container) return;
     showSpinner(container);
     const result = await apiCall(`/profile/${identity}`);
-    if (result.success && result.data) { // Se eliminó la dependencia de infoBasica aquí, se manejará dentro
+    if (result.success && result.data && result.data.infoBasica) {
         const { infoBasica, postulaciones, entrevistas } = result.data;
-        
-        // Muestra la identidad del usuario directamente desde la entrada, ya que la API puede no devolverla
-        const displayedIdentity = identity; 
-
         const postulacionesHTML = postulaciones && postulaciones.length > 0 ? postulaciones.map(p => `
             <tr>
                 <td>${p.vacanteId || 'N/A'}</td>
@@ -326,7 +322,6 @@ async function renderCandidateProfile(identity) {
                 <td>${p.fechaAplicacion || 'N/A'}</td>
             </tr>`).join('') :
             '<tr><td colspan="3" class="text-center text-muted">No tienes postulaciones registradas.</td></tr>';
-        
         const entrevistasHTML = entrevistas && entrevistas.length > 0 ? entrevistas.map(e => `
             <div class="card bg-light border-primary mb-3"><div class="card-body">
                 <h5 class="card-title">Entrevista para: ${e.vacante}</h5>
@@ -335,33 +330,18 @@ async function renderCandidateProfile(identity) {
                 <p class="card-text"><strong>Notas:</strong> ${e.observaciones}</p>
             </div></div>`).join('') :
             '<p class="text-muted">No tienes entrevistas programadas.</p>';
-        
-        if (infoBasica) {
-            container.innerHTML = `
-                <div class="candidate-panel">
-                    <div class="d-flex justify-content-between align-items-center"><h1 class="mb-1">Bienvenido, ${infoBasica.nombre || 'Candidato'}</h1><button class="btn btn-sm btn-outline-secondary" onclick="logout()"><i class="bi bi-arrow-left"></i> Volver</button></div>
-                    <p class="text-muted">Aquí puedes ver el estado de tus procesos de selección.</p><hr>
-                    <div class="row mb-4">
-                        <div class="col-md-6"><p><strong>Identidad:</strong> ${displayedIdentity}</p><p><strong>Teléfono:</strong> ${infoBasica.telefono || 'No registrado'}</p><p><strong>Correo:</strong> ${infoBasica.correo || 'No registrado'}</p></div>
-                        <div class="col-md-6"><p><strong>Ciudad:</strong> ${infoBasica.ciudad || 'No registrada'}</p><p><strong>Experiencia Principal:</strong> ${infoBasica.experiencia || 'No registrada'}</p><p><strong>Grado Académico:</strong> ${infoBasica.gradoAcademico || 'No registrado'}</p></div>
-                    </div>
-                    <h3 class="mt-4">Mis Postulaciones</h3><div class="table-responsive"><table class="table table-hover align-middle"><thead class="table-light"><tr><th>Vacante</th><th>Estado</th><th>Fecha de Aplicación</th></tr></thead><tbody>${postulacionesHTML}</tbody></table></div>
-                    <h3 class="mt-5">Próximas Entrevistas</h3>${entrevistasHTML}
-                </div>`;
-        } else {
-            // Si no hay infoBasica, muestra un mensaje más general o solo el ID si está disponible
-            container.innerHTML = `
-                <div class="candidate-panel text-center">
-                    <p class="fs-4 text-danger">Perfil no encontrado</p>
-                    <p class="text-muted">No se pudo encontrar un perfil asociado al número de identidad: <strong>${displayedIdentity}</strong>. Por favor, verifica el número e intenta de nuevo o regístrate si aún no lo has hecho.</p>
-                    <button class="btn btn-primary mt-3" onclick="navigateTo('page-candidate-login')">Volver a Intentar</button>
-                </div>`;
-        }
+        container.innerHTML = `
+            <div class="candidate-panel">
+                <div class="d-flex justify-content-between align-items-center"><h1 class="mb-1">Bienvenido, ${infoBasica.nombre}</h1><button class="btn btn-sm btn-outline-secondary" onclick="logout()"><i class="bi bi-arrow-left"></i> Volver</button></div>
+                <p class="text-muted">Aquí puedes ver el estado de tus procesos de selección.</p><hr>
+                <div class="row mb-4"><div class="col-md-6"><p><strong>Identidad:</strong> ${infoBasica.identidad}</p><p><strong>Teléfono:</strong> ${infoBasica.telefono}</p><p><strong>Correo:</strong> ${infoBasica.correo || 'No registrado'}</p></div><div class="col-md-6"><p><strong>Ciudad:</strong> ${infoBasica.ciudad}</p><p><strong>Experiencia Principal:</strong> ${infoBasica.experiencia}</p><p><strong>Grado Académico:</strong> ${infoBasica.gradoAcademico}</p></div></div>
+                <h3 class="mt-4">Mis Postulaciones</h3><div class="table-responsive"><table class="table table-hover align-middle"><thead class="table-light"><tr><th>Vacante</th><th>Estado</th><th>Fecha de Aplicación</th></tr></thead><tbody>${postulacionesHTML}</tbody></table></div>
+                <h3 class="mt-5">Próximas Entrevistas</h3>${entrevistasHTML}
+            </div>`;
     } else {
-        container.innerHTML = `<div class="candidate-panel text-center"><p class="fs-4 text-danger">Error</p><p class="text-muted">${result.error || 'No se pudo cargar el perfil del candidato. Error de comunicación con el servidor.'}</p><button class="btn btn-primary mt-3" onclick="navigateTo('page-login-selection')">Volver a Intentar</button></div>`;
+        container.innerHTML = `<div class="candidate-panel text-center"><p class="fs-4 text-danger">Error</p><p class="text-muted">${result.error || 'No se pudo encontrar el perfil solicitado.'}</p><button class="btn btn-primary mt-3" onclick="navigateTo('page-login-selection')">Volver a Intentar</button></div>`;
     }
 }
-
 
 async function renderAdminDashboard() {
     const container = document.getElementById('page-admin-dashboard');
@@ -634,26 +614,6 @@ window.logout = function() {
     window.location.reload(); // Recargar la página para limpiar el estado
 }
 
-// --- FUNCIÓN PARA LIMPIAR EL OVERLAY GRIS DESPUÉS DE MODALES (POTENCIAL FIX) ---
-// Aunque Bootstrap maneja esto, a veces puede quedar atascado. 
-// Forzar la eliminación de los elementos del backdrop puede ayudar.
-function clearModalBackdrops() {
-    const backdrops = document.querySelectorAll('.modal-backdrop');
-    backdrops.forEach(backdrop => {
-        backdrop.parentNode.removeChild(backdrop);
-    });
-    // Asegurarse de que el body no tenga la clase modal-open
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = ''; // Restablecer el overflow si fue modificado
-}
-
-// Sobrescribir o añadir un listener para cuando los modales se oculten
-// Esto asegura que cualquier overlay residual se limpie.
-document.addEventListener('hidden.bs.modal', function (event) {
-    clearModalBackdrops();
-});
-
-
 // --- FUNCIONALIDAD DE CHAT CON GEMINI (AHORA CON PROXY EN BACKEND) ---
 const chatModalElement = document.getElementById('chatModal');
 const chatModal = new bootstrap.Modal(chatModalElement);
@@ -788,7 +748,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (publicDataResult.success) {
             renderPublicPages(publicDataResult.data);
         } else {
-            // Se asume que renderPublicPages ya maneja spinners y mensajes de "no disponible"
             showAlert('Error de Carga', 'No se pudieron cargar los datos iniciales del portal. Intenta de nuevo más tarde.', 'danger');
             console.error('Error al cargar datos públicos iniciales:', publicDataResult.error);
         }
