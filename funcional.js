@@ -3,15 +3,12 @@
 // =======================================================
 
 // --- 1. CONFIGURACIÓN ---
-// ¡IMPORTANTE! Cuando despliegues en Render, DEBES cambiar esta URL
-// por la URL pública de tu servicio en Render.com (ej. https://tu-nombre-app.onrender.com)
-const BACKEND_API_URL = 'http://127.0.0.1:5001'; 
-// Si la estás ejecutando localmente en VS Code, déjala como 'http://127.0.0.1:5001'.
-// Cuando la subas a GitHub Pages, CÁMBIALA por la URL de Render.
-
+const BACKEND_API_URL = 'http://127.0.0.1:5001';
+// ¡IMPORTANTE! Reemplaza esto con el enlace de INSERCIÓN de tu Google Form
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfUIjyERr1AkHtXv5Dm-aIT2JOjCOtJsSfiMzCREs6HFMwUtw/viewform?usp=header'; 
-// La API Key de Gemini ahora se maneja en el backend (app.py) para mayor seguridad.
-// No es necesaria definirla aquí en el frontend (app.js).
+// API Key for Gemini. Si estás en VS Code, DEBES pegar tu clave aquí.
+// Si estuvieras en el entorno de Canvas, se podría dejar vacía.
+const GEMINI_API_KEY = "AIzaSyBZgd7mIANhNg1ZjsVnekGb3zldrtqRVx8"; // <<<<<<<<<<< ¡PEGA TU CLAVE DE GEMINI AQUÍ!
 
 // --- 2. FUNCIÓN CENTRAL PARA LLAMADAS A LA API ---
 async function apiCall(endpoint, method = 'GET', data = null) {
@@ -72,7 +69,7 @@ function showSpinner(container) {
     if (container) container.innerHTML = '<div class="d-flex justify-content-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
 }
 
-// --- FUNCIONES PARA ALERTAS Y CONFIRMACIONES PERSONALIZADAS ---
+// --- FUNCIONES PARA ALERTAS Y CONFIRMACIONES PERSONALIZADAS (Nuevas y Mejoradas) ---
 /**
  * Muestra un modal de alerta personalizado.
  * @param {string} title - El título del modal.
@@ -162,8 +159,9 @@ function renderPublicPages(publicData) {
     const { vacancies, posts, webContent } = publicData;
     renderHeroCarousel(webContent);
     renderHomePagePosts(posts);
-    renderVacanciesPage(vacancies); 
-    renderAboutPage(webContent); // Actualizado para cargar contenido de contacto
+    renderVacanciesPage(vacancies); // Esta función ahora adjunta listeners para el modal de CV
+    renderAboutPage(webContent);
+    // renderPostsFeed(posts); // Ya no se llama aquí, se llama desde navigateTo cuando se necesita.
 }
 
 function renderHeroCarousel(webContent) {
@@ -228,9 +226,7 @@ function renderVacanciesPage(vacancies) {
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title text-primary">${v.puesto}</h5>
                         <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-building"></i> ${v.empresa || 'Confidencial'}</h6>
-                        <p class="card-text mb-1"><i class="bi bi-geo-alt-fill"></i> ${v.ciudad}</p>
-                        <p class="card-text text-truncate-3">${v.descripcion ? v.descripcion.substring(0, 150) + '...' : 'Sin descripción.'}</p>
-                        <p class="card-text text-truncate-2"><strong>Requisitos:</strong> ${v.requisitos ? v.requisitos.substring(0, 100) + '...' : 'No especificados.'}</p>
+                        <p class="card-text flex-grow-1"><i class="bi bi-geo-alt-fill"></i> ${v.ciudad}</p>
                         <button class="btn btn-sm btn-outline-primary mt-auto apply-vacancy-btn" data-bs-toggle="modal" data-bs-target="#cvModal">Postular Ahora</button>
                     </div>
                 </div>
@@ -256,9 +252,9 @@ function renderVacanciesPage(vacancies) {
 function renderAboutPage(webContent) {
     const misionText = document.getElementById('mision-text');
     const visionText = document.getElementById('vision-text');
-    const contactSection = document.getElementById('contact-section'); 
+    // La sección de contacto no necesita llenarse con datos dinámicos a menos que los haya en webContent
+    // const contactSection = document.getElementById('contact-section'); 
 
-    // Limpiar spinners y mostrar contenido para Misión y Visión
     if (misionText) {
         misionText.innerHTML = ''; // Limpiar el spinner
         misionText.textContent = (webContent && webContent.texto_mision) || 'Contenido de misión no disponible.';
@@ -266,25 +262,6 @@ function renderAboutPage(webContent) {
     if (visionText) {
         visionText.innerHTML = ''; // Limpiar el spinner
         visionText.textContent = (webContent && webContent.texto_vision) || 'Contenido de visión no disponible.';
-    }
-
-    // Llenar la sección de contacto dinámicamente
-    if (contactSection) {
-        const direccion = (webContent && webContent.contacto_direccion) || '[Tu Dirección Aquí]';
-        const telefono = (webContent && webContent.contacto_telefono) || '[Tu Número de Teléfono Aquí]';
-        const email = (webContent && webContent.contacto_email) || '[tu_correo@ejemplo.com]';
-        const horario = (webContent && webContent.contacto_horario) || 'No especificado.';
-
-        contactSection.innerHTML = `
-            <p>Si tienes preguntas o necesitas más información, no dudes en contactarnos:</p>
-            <ul class="list-unstyled">
-                <li><i class="bi bi-geo-alt-fill me-2"></i> Dirección: ${direccion}</li>
-                <li><i class="bi bi-telephone-fill me-2"></i> Teléfono: ${telefono}</li>
-                <li><i class="bi bi-envelope-fill me-2"></i> Correo Electrónico: <a href="mailto:${email}">${email}</a></li>
-                <li><i class="bi bi-clock-fill me-2"></i> Horario de Atención: ${horario}</li>
-            </ul>
-            <p class="text-muted fst-italic">¡Estamos aquí para ayudarte a conectar tu talento con las mejores oportunidades!</p>
-        `;
     }
 }
 
@@ -435,7 +412,7 @@ async function fetchAndRenderAdminPosts() {
     }
 }
 
-// Panel de Administración de Contenido Web
+// NUEVO: Panel de Administración de Contenido Web
 async function renderAdminWebPanel() {
     const container = document.getElementById('admin-content-area');
     showSpinner(container); // Mostrar spinner mientras carga los datos existentes
@@ -449,18 +426,10 @@ async function renderAdminWebPanel() {
     container.innerHTML = `
         <div class="card mb-4"><div class="card-header"><h3><i class="bi bi-gear-fill"></i> Gestionar Contenido Web</h3></div>
         <div class="card-body"><form id="update-web-content-form">
-            <h4>Contenido General</h4>
             <div class="mb-3"><label class="form-label">Misión</label><textarea id="web-mision" class="form-control" rows="3">${webContent.texto_mision || ''}</textarea></div>
             <div class="mb-3"><label class="form-label">Visión</label><textarea id="web-vision" class="form-control" rows="3">${webContent.texto_vision || ''}</textarea></div>
             <div class="mb-3"><label class="form-label">Imagen Hero 1 URL</label><input type="text" id="web-hero-img-1" class="form-control" value="${webContent.imagen_hero_1 || ''}"></div>
             <div class="mb-3"><label class="form-label">Imagen Hero 2 URL</label><input type="text" id="web-hero-img-2" class="form-control" value="${webContent.imagen_hero_2 || ''}"></div>
-            
-            <h4 class="mt-4">Información de Contacto</h4>
-            <div class="mb-3"><label class="form-label">Dirección</label><input type="text" id="web-contacto-direccion" class="form-control" value="${webContent.contacto_direccion || ''}"></div>
-            <div class="mb-3"><label class="form-label">Teléfono</label><input type="text" id="web-contacto-telefono" class="form-control" value="${webContent.contacto_telefono || ''}"></div>
-            <div class="mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="web-contacto-email" class="form-control" value="${webContent.contacto_email || ''}"></div>
-            <div class="mb-3"><label class="form-label">Horario de Atención</label><input type="text" id="web-contacto-horario" class="form-control" value="${webContent.contacto_horario || ''}"></div>
-
             <button type="submit" class="btn btn-success">Guardar Cambios</button>
         </form></div></div>`;
     
@@ -473,13 +442,8 @@ async function handleUpdateWebContent(event) {
         { key: 'texto_mision', value: document.getElementById('web-mision').value },
         { key: 'texto_vision', value: document.getElementById('web-vision').value },
         { key: 'imagen_hero_1', value: document.getElementById('web-hero-img-1').value },
-        { key: 'imagen_hero_2', value: document.getElementById('web-hero-img-2').value },
-        // Nuevas claves para la información de contacto
-        { key: 'contacto_direccion', value: document.getElementById('web-contacto-direccion').value },
-        { key: 'contacto_telefono', value: document.getElementById('web-contacto-telefono').value },
-        { key: 'contacto_email', value: document.getElementById('web-contacto-email').value },
-        { key: 'contacto_horario', value: document.getElementById('web-contacto-horario').value }
-    ].filter(item => item.value !== null && item.value !== undefined); 
+        { key: 'imagen_hero_2', value: document.getElementById('web-hero-img-2').value }
+    ].filter(item => item.value !== null && item.value !== undefined); // Filtrar para no enviar valores nulos si no se encuentran
 
     const result = await apiCall('/web-config', 'POST', { updates: updates });
     if(result.success) {
@@ -617,7 +581,7 @@ window.logout = function() {
     window.location.reload(); // Recargar la página para limpiar el estado
 }
 
-// --- FUNCIONALIDAD DE CHAT CON GEMINI (AHORA CON PROXY EN BACKEND) ---
+// --- NUEVO: FUNCIONALIDAD DE CHAT CON GEMINI ---
 const chatModalElement = document.getElementById('chatModal');
 const chatModal = new bootstrap.Modal(chatModalElement);
 const chatInput = document.getElementById('chatInput');
@@ -625,7 +589,6 @@ const sendChatButton = document.getElementById('sendChatButton');
 const chatMessagesContainer = document.getElementById('chatMessages');
 
 // Historial del chat para Gemini (el primer mensaje es la "personalidad" del bot)
-// Este historial se envía en cada petición para mantener el contexto de la conversación.
 let chatHistory = [{
     role: "user", 
     parts: [{ text: "Eres un asistente de la agencia de empleos Henmir. Proporciona información concisa y útil sobre nuestros servicios, vacantes, cómo postularse, nuestra misión, visión y cualquier otra pregunta relacionada con la agencia. Responde de manera amigable y profesional. Si te preguntan algo fuera de tus conocimientos, menciona que solo puedes ayudar con temas relacionados con Henmir." }]
@@ -665,15 +628,16 @@ async function sendMessageToGemini() {
     `);
     chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
 
-    // Añadir el mensaje del usuario al historial para enviarlo al backend
     chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
 
     try {
-        // Enviar el historial completo al backend proxy
-        const response = await fetch(`${BACKEND_API_URL}/chat/gemini`, {
+        const payload = { contents: chatHistory };
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: chatHistory }) // Enviar el historial como parte del cuerpo
+            body: JSON.stringify(payload)
         });
 
         const result = await response.json();
@@ -687,21 +651,21 @@ async function sendMessageToGemini() {
             result.candidates[0].content.parts.length > 0) {
             const botResponse = result.candidates[0].content.parts[0].text;
             addMessageToChat(botResponse, false);
-            // Añadir la respuesta del bot al historial para futuras interacciones
             chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
         } else {
             addMessageToChat("Lo siento, no pude obtener una respuesta en este momento. Intenta de nuevo más tarde.", false);
-            console.error("Respuesta inesperada de Gemini (desde backend):", result);
+            console.error("Respuesta inesperada de Gemini:", result);
         }
     } catch (error) {
         // Eliminar mensaje de carga
         const loadingDiv = document.getElementById(loadingMessageId);
         if (loadingDiv) loadingDiv.remove();
         addMessageToChat("Hubo un error al comunicarse con el asistente. Por favor, inténtalo de nuevo.", false);
-        console.error("Error al llamar al proxy de Gemini en el backend:", error);
+        console.error("Error al llamar a la API de Gemini:", error);
     }
 }
 
+// Event Listeners para el chat (se adjuntan en DOMContentLoaded)
 // Función para actualizar la sección de autenticación en el header
 function updateAuthSection() {
     const isAdmin = localStorage.getItem('isAdminLoggedIn') === 'true';
