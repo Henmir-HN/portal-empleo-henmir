@@ -3,11 +3,8 @@
 // =======================================================
 
 // --- 1. CONFIGURACIÓN ---
-// ¡IMPORTANTE! Cuando despliegues en Render, DEBES cambiar esta URL
-// por la URL pública de tu servicio en Render.com (ej. https://tu-nombre-app.onrender.com)
-const BACKEND_API_URL = 'http://127.0.0.1:5001'; 
-// Si la estás ejecutando localmente en VS Code, déjala como 'http://127.0.0.1:5001'.
-// Cuando la subas a GitHub Pages, CÁMBIALA por la URL de Render.
+// ¡IMPORTANTE! Esta URL DEBE ser la URL pública de tu servicio de backend en Render.com.
+const BACKEND_API_URL = 'https://henmir-api.onrender.com'; 
 
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfUIjyERr1AkHtXv5Dm-aIT2JOjCOtJsSfiMzCREs6HFMwUtw/viewform?usp=header'; 
 // La API Key de Gemini ahora se maneja en el backend (app.py) para mayor seguridad.

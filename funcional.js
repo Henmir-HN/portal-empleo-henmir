@@ -3,12 +3,12 @@
 // =======================================================
 
 // --- 1. CONFIGURACIÓN ---
-const BACKEND_API_URL = 'http://127.0.0.1:5001';
-// ¡IMPORTANTE! Reemplaza esto con el enlace de INSERCIÓN de tu Google Form
+// ¡IMPORTANTE! Esta URL DEBE ser la URL pública de tu servicio de backend en Render.com.
+const BACKEND_API_URL = 'https://henmir-api.onrender.com'; 
+
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfUIjyERr1AkHtXv5Dm-aIT2JOjCOtJsSfiMzCREs6HFMwUtw/viewform?usp=header'; 
-// API Key for Gemini. Si estás en VS Code, DEBES pegar tu clave aquí.
-// Si estuvieras en el entorno de Canvas, se podría dejar vacía.
-const GEMINI_API_KEY = "AIzaSyBZgd7mIANhNg1ZjsVnekGb3zldrtqRVx8"; // <<<<<<<<<<< ¡PEGA TU CLAVE DE GEMINI AQUÍ!
+// La API Key de Gemini ahora se maneja en el backend (app.py) para mayor seguridad.
+// No es necesaria definirla aquí en el frontend (app.js).
 
 // --- 2. FUNCIÓN CENTRAL PARA LLAMADAS A LA API ---
 async function apiCall(endpoint, method = 'GET', data = null) {
@@ -69,7 +69,7 @@ function showSpinner(container) {
     if (container) container.innerHTML = '<div class="d-flex justify-content-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
 }
 
-// --- FUNCIONES PARA ALERTAS Y CONFIRMACIONES PERSONALIZADAS (Nuevas y Mejoradas) ---
+// --- FUNCIONES PARA ALERTAS Y CONFIRMACIONES PERSONALIZADAS ---
 /**
  * Muestra un modal de alerta personalizado.
  * @param {string} title - El título del modal.
@@ -159,9 +159,8 @@ function renderPublicPages(publicData) {
     const { vacancies, posts, webContent } = publicData;
     renderHeroCarousel(webContent);
     renderHomePagePosts(posts);
-    renderVacanciesPage(vacancies); // Esta función ahora adjunta listeners para el modal de CV
-    renderAboutPage(webContent);
-    // renderPostsFeed(posts); // Ya no se llama aquí, se llama desde navigateTo cuando se necesita.
+    renderVacanciesPage(vacancies); 
+    renderAboutPage(webContent); // Actualizado para cargar contenido de contacto
 }
 
 function renderHeroCarousel(webContent) {
@@ -226,7 +225,9 @@ function renderVacanciesPage(vacancies) {
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title text-primary">${v.puesto}</h5>
                         <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-building"></i> ${v.empresa || 'Confidencial'}</h6>
-                        <p class="card-text flex-grow-1"><i class="bi bi-geo-alt-fill"></i> ${v.ciudad}</p>
+                        <p class="card-text mb-1"><i class="bi bi-geo-alt-fill"></i> ${v.ciudad}</p>
+                        <p class="card-text text-truncate-3">${v.descripcion ? v.descripcion.substring(0, 150) + '...' : 'Sin descripción.'}</p>
+                        <p class="card-text text-truncate-2"><strong>Requisitos:</strong> ${v.requisitos ? v.requisitos.substring(0, 100) + '...' : 'No especificados.'}</p>
                         <button class="btn btn-sm btn-outline-primary mt-auto apply-vacancy-btn" data-bs-toggle="modal" data-bs-target="#cvModal">Postular Ahora</button>
                     </div>
                 </div>
@@ -252,9 +253,9 @@ function renderVacanciesPage(vacancies) {
 function renderAboutPage(webContent) {
     const misionText = document.getElementById('mision-text');
     const visionText = document.getElementById('vision-text');
-    // La sección de contacto no necesita llenarse con datos dinámicos a menos que los haya en webContent
-    // const contactSection = document.getElementById('contact-section'); 
+    const contactSection = document.getElementById('contact-section'); 
 
+    // Limpiar spinners y mostrar contenido para Misión y Visión
     if (misionText) {
         misionText.innerHTML = ''; // Limpiar el spinner
         misionText.textContent = (webContent && webContent.texto_mision) || 'Contenido de misión no disponible.';
@@ -262,6 +263,25 @@ function renderAboutPage(webContent) {
     if (visionText) {
         visionText.innerHTML = ''; // Limpiar el spinner
         visionText.textContent = (webContent && webContent.texto_vision) || 'Contenido de visión no disponible.';
+    }
+
+    // Llenar la sección de contacto dinámicamente
+    if (contactSection) {
+        const direccion = (webContent && webContent.contacto_direccion) || '[Tu Dirección Aquí]';
+        const telefono = (webContent && webContent.contacto_telefono) || '[Tu Número de Teléfono Aquí]';
+        const email = (webContent && webContent.contacto_email) || '[tu_correo@ejemplo.com]';
+        const horario = (webContent && webContent.contacto_horario) || 'No especificado.';
+
+        contactSection.innerHTML = `
+            <p>Si tienes preguntas o necesitas más información, no dudes en contactarnos:</p>
+            <ul class="list-unstyled">
+                <li><i class="bi bi-geo-alt-fill me-2"></i> Dirección: ${direccion}</li>
+                <li><i class="bi bi-telephone-fill me-2"></i> Teléfono: ${telefono}</li>
+                <li><i class="bi bi-envelope-fill me-2"></i> Correo Electrónico: <a href="mailto:${email}">${email}</a></li>
+                <li><i class="bi bi-clock-fill me-2"></i> Horario de Atención: ${horario}</li>
+            </ul>
+            <p class="text-muted fst-italic">¡Estamos aquí para ayudarte a conectar tu talento con las mejores oportunidades!</p>
+        `;
     }
 }
 
@@ -293,8 +313,12 @@ async function renderCandidateProfile(identity) {
     if (!container) return;
     showSpinner(container);
     const result = await apiCall(`/profile/${identity}`);
-    if (result.success && result.data && result.data.infoBasica) {
+    if (result.success && result.data) { // Se eliminó la dependencia de infoBasica aquí, se manejará dentro
         const { infoBasica, postulaciones, entrevistas } = result.data;
+        
+        // Muestra la identidad del usuario directamente desde la entrada, ya que la API puede no devolverla
+        const displayedIdentity = identity; 
+
         const postulacionesHTML = postulaciones && postulaciones.length > 0 ? postulaciones.map(p => `
             <tr>
                 <td>${p.vacanteId || 'N/A'}</td>
@@ -302,6 +326,7 @@ async function renderCandidateProfile(identity) {
                 <td>${p.fechaAplicacion || 'N/A'}</td>
             </tr>`).join('') :
             '<tr><td colspan="3" class="text-center text-muted">No tienes postulaciones registradas.</td></tr>';
+        
         const entrevistasHTML = entrevistas && entrevistas.length > 0 ? entrevistas.map(e => `
             <div class="card bg-light border-primary mb-3"><div class="card-body">
                 <h5 class="card-title">Entrevista para: ${e.vacante}</h5>
@@ -310,18 +335,33 @@ async function renderCandidateProfile(identity) {
                 <p class="card-text"><strong>Notas:</strong> ${e.observaciones}</p>
             </div></div>`).join('') :
             '<p class="text-muted">No tienes entrevistas programadas.</p>';
-        container.innerHTML = `
-            <div class="candidate-panel">
-                <div class="d-flex justify-content-between align-items-center"><h1 class="mb-1">Bienvenido, ${infoBasica.nombre}</h1><button class="btn btn-sm btn-outline-secondary" onclick="logout()"><i class="bi bi-arrow-left"></i> Volver</button></div>
-                <p class="text-muted">Aquí puedes ver el estado de tus procesos de selección.</p><hr>
-                <div class="row mb-4"><div class="col-md-6"><p><strong>Identidad:</strong> ${infoBasica.identidad}</p><p><strong>Teléfono:</strong> ${infoBasica.telefono}</p><p><strong>Correo:</strong> ${infoBasica.correo || 'No registrado'}</p></div><div class="col-md-6"><p><strong>Ciudad:</strong> ${infoBasica.ciudad}</p><p><strong>Experiencia Principal:</strong> ${infoBasica.experiencia}</p><p><strong>Grado Académico:</strong> ${infoBasica.gradoAcademico}</p></div></div>
-                <h3 class="mt-4">Mis Postulaciones</h3><div class="table-responsive"><table class="table table-hover align-middle"><thead class="table-light"><tr><th>Vacante</th><th>Estado</th><th>Fecha de Aplicación</th></tr></thead><tbody>${postulacionesHTML}</tbody></table></div>
-                <h3 class="mt-5">Próximas Entrevistas</h3>${entrevistasHTML}
-            </div>`;
+        
+        if (infoBasica) {
+            container.innerHTML = `
+                <div class="candidate-panel">
+                    <div class="d-flex justify-content-between align-items-center"><h1 class="mb-1">Bienvenido, ${infoBasica.nombre || 'Candidato'}</h1><button class="btn btn-sm btn-outline-secondary" onclick="logout()"><i class="bi bi-arrow-left"></i> Volver</button></div>
+                    <p class="text-muted">Aquí puedes ver el estado de tus procesos de selección.</p><hr>
+                    <div class="row mb-4">
+                        <div class="col-md-6"><p><strong>Identidad:</strong> ${displayedIdentity}</p><p><strong>Teléfono:</strong> ${infoBasica.telefono || 'No registrado'}</p><p><strong>Correo:</strong> ${infoBasica.correo || 'No registrado'}</p></div>
+                        <div class="col-md-6"><p><strong>Ciudad:</strong> ${infoBasica.ciudad || 'No registrada'}</p><p><strong>Experiencia Principal:</strong> ${infoBasica.experiencia || 'No registrada'}</p><p><strong>Grado Académico:</strong> ${infoBasica.gradoAcademico || 'No registrado'}</p></div>
+                    </div>
+                    <h3 class="mt-4">Mis Postulaciones</h3><div class="table-responsive"><table class="table table-hover align-middle"><thead class="table-light"><tr><th>Vacante</th><th>Estado</th><th>Fecha de Aplicación</th></tr></thead><tbody>${postulacionesHTML}</tbody></table></div>
+                    <h3 class="mt-5">Próximas Entrevistas</h3>${entrevistasHTML}
+                </div>`;
+        } else {
+            // Si no hay infoBasica, muestra un mensaje más general o solo el ID si está disponible
+            container.innerHTML = `
+                <div class="candidate-panel text-center">
+                    <p class="fs-4 text-danger">Perfil no encontrado</p>
+                    <p class="text-muted">No se pudo encontrar un perfil asociado al número de identidad: <strong>${displayedIdentity}</strong>. Por favor, verifica el número e intenta de nuevo o regístrate si aún no lo has hecho.</p>
+                    <button class="btn btn-primary mt-3" onclick="navigateTo('page-candidate-login')">Volver a Intentar</button>
+                </div>`;
+        }
     } else {
-        container.innerHTML = `<div class="candidate-panel text-center"><p class="fs-4 text-danger">Error</p><p class="text-muted">${result.error || 'No se pudo encontrar el perfil solicitado.'}</p><button class="btn btn-primary mt-3" onclick="navigateTo('page-login-selection')">Volver a Intentar</button></div>`;
+        container.innerHTML = `<div class="candidate-panel text-center"><p class="fs-4 text-danger">Error</p><p class="text-muted">${result.error || 'No se pudo cargar el perfil del candidato. Error de comunicación con el servidor.'}</p><button class="btn btn-primary mt-3" onclick="navigateTo('page-login-selection')">Volver a Intentar</button></div>`;
     }
 }
+
 
 async function renderAdminDashboard() {
     const container = document.getElementById('page-admin-dashboard');
@@ -412,7 +452,7 @@ async function fetchAndRenderAdminPosts() {
     }
 }
 
-// NUEVO: Panel de Administración de Contenido Web
+// Panel de Administración de Contenido Web
 async function renderAdminWebPanel() {
     const container = document.getElementById('admin-content-area');
     showSpinner(container); // Mostrar spinner mientras carga los datos existentes
@@ -426,10 +466,18 @@ async function renderAdminWebPanel() {
     container.innerHTML = `
         <div class="card mb-4"><div class="card-header"><h3><i class="bi bi-gear-fill"></i> Gestionar Contenido Web</h3></div>
         <div class="card-body"><form id="update-web-content-form">
+            <h4>Contenido General</h4>
             <div class="mb-3"><label class="form-label">Misión</label><textarea id="web-mision" class="form-control" rows="3">${webContent.texto_mision || ''}</textarea></div>
             <div class="mb-3"><label class="form-label">Visión</label><textarea id="web-vision" class="form-control" rows="3">${webContent.texto_vision || ''}</textarea></div>
             <div class="mb-3"><label class="form-label">Imagen Hero 1 URL</label><input type="text" id="web-hero-img-1" class="form-control" value="${webContent.imagen_hero_1 || ''}"></div>
             <div class="mb-3"><label class="form-label">Imagen Hero 2 URL</label><input type="text" id="web-hero-img-2" class="form-control" value="${webContent.imagen_hero_2 || ''}"></div>
+            
+            <h4 class="mt-4">Información de Contacto</h4>
+            <div class="mb-3"><label class="form-label">Dirección</label><input type="text" id="web-contacto-direccion" class="form-control" value="${webContent.contacto_direccion || ''}"></div>
+            <div class="mb-3"><label class="form-label">Teléfono</label><input type="text" id="web-contacto-telefono" class="form-control" value="${webContent.contacto_telefono || ''}"></div>
+            <div class="mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="web-contacto-email" class="form-control" value="${webContent.contacto_email || ''}"></div>
+            <div class="mb-3"><label class="form-label">Horario de Atención</label><input type="text" id="web-contacto-horario" class="form-control" value="${webContent.contacto_horario || ''}"></div>
+
             <button type="submit" class="btn btn-success">Guardar Cambios</button>
         </form></div></div>`;
     
@@ -442,8 +490,13 @@ async function handleUpdateWebContent(event) {
         { key: 'texto_mision', value: document.getElementById('web-mision').value },
         { key: 'texto_vision', value: document.getElementById('web-vision').value },
         { key: 'imagen_hero_1', value: document.getElementById('web-hero-img-1').value },
-        { key: 'imagen_hero_2', value: document.getElementById('web-hero-img-2').value }
-    ].filter(item => item.value !== null && item.value !== undefined); // Filtrar para no enviar valores nulos si no se encuentran
+        { key: 'imagen_hero_2', value: document.getElementById('web-hero-img-2').value },
+        // Nuevas claves para la información de contacto
+        { key: 'contacto_direccion', value: document.getElementById('web-contacto-direccion').value },
+        { key: 'contacto_telefono', value: document.getElementById('web-contacto-telefono').value },
+        { key: 'contacto_email', value: document.getElementById('web-contacto-email').value },
+        { key: 'contacto_horario', value: document.getElementById('web-contacto-horario').value }
+    ].filter(item => item.value !== null && item.value !== undefined); 
 
     const result = await apiCall('/web-config', 'POST', { updates: updates });
     if(result.success) {
@@ -581,7 +634,27 @@ window.logout = function() {
     window.location.reload(); // Recargar la página para limpiar el estado
 }
 
-// --- NUEVO: FUNCIONALIDAD DE CHAT CON GEMINI ---
+// --- FUNCIÓN PARA LIMPIAR EL OVERLAY GRIS DESPUÉS DE MODALES (POTENCIAL FIX) ---
+// Aunque Bootstrap maneja esto, a veces puede quedar atascado. 
+// Forzar la eliminación de los elementos del backdrop puede ayudar.
+function clearModalBackdrops() {
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(backdrop => {
+        backdrop.parentNode.removeChild(backdrop);
+    });
+    // Asegurarse de que el body no tenga la clase modal-open
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = ''; // Restablecer el overflow si fue modificado
+}
+
+// Sobrescribir o añadir un listener para cuando los modales se oculten
+// Esto asegura que cualquier overlay residual se limpie.
+document.addEventListener('hidden.bs.modal', function (event) {
+    clearModalBackdrops();
+});
+
+
+// --- FUNCIONALIDAD DE CHAT CON GEMINI (AHORA CON PROXY EN BACKEND) ---
 const chatModalElement = document.getElementById('chatModal');
 const chatModal = new bootstrap.Modal(chatModalElement);
 const chatInput = document.getElementById('chatInput');
@@ -589,6 +662,7 @@ const sendChatButton = document.getElementById('sendChatButton');
 const chatMessagesContainer = document.getElementById('chatMessages');
 
 // Historial del chat para Gemini (el primer mensaje es la "personalidad" del bot)
+// Este historial se envía en cada petición para mantener el contexto de la conversación.
 let chatHistory = [{
     role: "user", 
     parts: [{ text: "Eres un asistente de la agencia de empleos Henmir. Proporciona información concisa y útil sobre nuestros servicios, vacantes, cómo postularse, nuestra misión, visión y cualquier otra pregunta relacionada con la agencia. Responde de manera amigable y profesional. Si te preguntan algo fuera de tus conocimientos, menciona que solo puedes ayudar con temas relacionados con Henmir." }]
@@ -628,16 +702,15 @@ async function sendMessageToGemini() {
     `);
     chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
 
+    // Añadir el mensaje del usuario al historial para enviarlo al backend
     chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
 
     try {
-        const payload = { contents: chatHistory };
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-        const response = await fetch(apiUrl, {
+        // Enviar el historial completo al backend proxy
+        const response = await fetch(`${BACKEND_API_URL}/chat/gemini`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ contents: chatHistory }) // Enviar el historial como parte del cuerpo
         });
 
         const result = await response.json();
@@ -651,21 +724,21 @@ async function sendMessageToGemini() {
             result.candidates[0].content.parts.length > 0) {
             const botResponse = result.candidates[0].content.parts[0].text;
             addMessageToChat(botResponse, false);
+            // Añadir la respuesta del bot al historial para futuras interacciones
             chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
         } else {
             addMessageToChat("Lo siento, no pude obtener una respuesta en este momento. Intenta de nuevo más tarde.", false);
-            console.error("Respuesta inesperada de Gemini:", result);
+            console.error("Respuesta inesperada de Gemini (desde backend):", result);
         }
     } catch (error) {
         // Eliminar mensaje de carga
         const loadingDiv = document.getElementById(loadingMessageId);
         if (loadingDiv) loadingDiv.remove();
         addMessageToChat("Hubo un error al comunicarse con el asistente. Por favor, inténtalo de nuevo.", false);
-        console.error("Error al llamar a la API de Gemini:", error);
+        console.error("Error al llamar al proxy de Gemini en el backend:", error);
     }
 }
 
-// Event Listeners para el chat (se adjuntan en DOMContentLoaded)
 // Función para actualizar la sección de autenticación en el header
 function updateAuthSection() {
     const isAdmin = localStorage.getItem('isAdminLoggedIn') === 'true';
@@ -715,6 +788,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (publicDataResult.success) {
             renderPublicPages(publicDataResult.data);
         } else {
+            // Se asume que renderPublicPages ya maneja spinners y mensajes de "no disponible"
             showAlert('Error de Carga', 'No se pudieron cargar los datos iniciales del portal. Intenta de nuevo más tarde.', 'danger');
             console.error('Error al cargar datos públicos iniciales:', publicDataResult.error);
         }

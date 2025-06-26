@@ -1,109 +1,281 @@
-/* --- ESTILOS PERSONALIZADOS --- */
+/* Colores Base */
+:root {
+    --primary-color: #0d6efd; /* Azul de Bootstrap Primary */
+    --secondary-color: #6c757d; /* Gris de Bootstrap Secondary */
+    --accent-color: #ffc107; /* Amarillo de Bootstrap Warning */
+    --dark-color: #212529; /* Negro de Bootstrap Dark */
+    --light-color: #f8f9fa; /* Gris muy claro de Bootstrap Light */
+}
+
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #f8f9fa;
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    line-height: 1.6;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.text-primary { color: var(--primary-color) !important; }
+.text-secondary { color: var(--secondary-color) !important; }
+.btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+.btn-primary:hover { background-color: #0b5ed7; border-color: #0a58ca; }
+.btn-outline-primary { color: var(--primary-color); border-color: var(--primary-color); }
+.btn-outline-primary:hover { background-color: var(--primary-color); color: white; }
+.btn-secondary { background-color: var(--secondary-color); border-color: var(--secondary-color); }
+.btn-secondary:hover { background-color: #5c636a; border-color: #565e64; }
+.btn-danger { background-color: #dc3545; border-color: #dc3545; }
+.btn-danger:hover { background-color: #bb2d3b; border-color: #bb2d3b; }
+.btn-success { background-color: #198754; border-color: #198754; }
+.btn-success:hover { background-color: #157347; border-color: #146c43; }
+.btn-info { background-color: #0dcaf0; border-color: #0dcaf0; }
+.btn-info:hover { background-color: #31d2f2; border-color: #25cff2; }
+
+
+/* Navbar */
 .navbar {
-    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+.navbar-brand {
+    font-size: 1.8rem;
+}
+.nav-link {
+    font-weight: 500;
+    margin: 0 10px;
+    transition: color 0.3s ease;
+}
+.nav-link:hover {
+    color: var(--primary-color);
 }
 
-.page {
-    display: none;
-}
 
-.page.active {
-    display: block;
-    animation: fadeIn 0.5s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
+/* Hero Section */
 .hero-section {
-    background-size: cover;
-    background-position: center;
+    background-image: url('https://placehold.co/1200x400/0d6efd/ffffff?text=Henmir'); /* Imagen por defecto */
+    background-size: cover; /* ¡CLAVE! Asegura que la imagen cubra todo el espacio */
+    background-position: center center; /* ¡CLAVE! Centra la imagen */
+    background-repeat: no-repeat;
     color: white;
-    padding: 120px 0;
+    padding: 100px 0;
     text-align: center;
-    position: relative;
-    transition: background-image 1s ease-in-out;
-    border-radius: .5rem;
+    min-height: 400px; /* Altura mínima para el carrusel */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: background-image 1s ease-in-out; /* Transición suave entre imágenes */
+}
+.hero-section h1 {
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+.hero-section p {
+    color: rgba(255,255,255,0.9);
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
 }
 
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: .5rem;
+
+/* General Page Styling */
+.page {
+    display: none; /* Ocultar todas las páginas por defecto */
+    animation: fadeIn 0.5s ease-out;
+}
+.page.active {
+    display: block; /* Mostrar la página activa */
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.hero-section .container {
-    position: relative;
-    z-index: 2;
-}
-
+/* Cards */
 .card {
-    transition: all 0.3s ease;
     border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,.1);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.job-card .card-body {
+    padding: 25px;
+}
+.job-card .card-title {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+}
+.job-card .card-subtitle {
+    font-size: 0.95rem;
+}
+.job-card .card-text i {
+    color: var(--secondary-color);
+    margin-right: 5px;
 }
 
-.admin-panel, .candidate-panel {
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 2rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,.1);
+/* Text Truncation */
+.text-truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 60px; /* Asegura altura consistente */
+}
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 40px; /* Asegura altura consistente */
 }
 
-.form-label {
-    font-weight: 600;
-}
 
+/* Spinners */
 .spinner-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 200px;
+    min-height: 150px; /* Suficiente espacio para el spinner */
 }
 
+/* Admin Panel Specifics */
+.admin-panel .card-header {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 14px 14px 0 0;
+}
+.admin-panel .card {
+    border: 1px solid rgba(0,0,0,0.05);
+}
+.admin-panel .table thead th {
+    background-color: var(--light-color);
+}
+
+
+/* Custom Modals */
+.modal-content {
+    border-radius: 15px;
+    overflow: hidden;
+}
+.modal-header {
+    border-bottom: none;
+    padding: 1.5rem;
+    color: white;
+}
+.modal-header .btn-close {
+    filter: invert(1); /* Para que el botón de cerrar sea blanco */
+}
+.modal-body {
+    padding: 2rem;
+}
+.modal-footer {
+    border-top: none;
+    padding: 1.5rem;
+    justify-content: center;
+}
+
+/* CV Modal iframe specific styling */
+#cvModal .modal-body {
+    padding: 0; /* Elimina el padding del body del modal para que el iframe lo llene */
+    display: flex; /* Permite que el iframe se expanda */
+    flex-direction: column;
+}
+
+#googleFormIframe {
+    width: 100%;
+    height: 100%; /* El iframe ahora llenará el 100% del modal-body */
+    min-height: 70vh; /* Asegura una altura mínima para el iframe */
+    border: none;
+}
+
+
+/* Chatbot Button */
 .chat-icon {
     position: fixed;
     bottom: 20px;
     right: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
     width: 60px;
     height: 60px;
-    border-radius: 50%;
-    background-color: #0d6efd;
-    color: white;
     display: flex;
-    align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    align-items: center;
+    font-size: 2.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,.2);
-    z-index: 1050;
+    z-index: 1050; /* Por encima de otros elementos, pero debajo de modales */
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.chat-icon:hover {
+    transform: scale(1.08);
+    background-color: #0b5ed7;
 }
 
-.status-badge {
-    padding: 0.35em 0.65em;
-    font-size: .75em;
-    font-weight: 700;
-    line-height: 1;
-    color: #fff;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: .25rem;
+/* Chat Modal Customizations */
+#chatMessages {
+    min-height: 250px;
+    max-height: 60vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column; /* Para que los mensajes se apilen */
+    gap: 8px; /* Espacio entre burbujas de mensaje */
+}
+#chatInput {
+    border-radius: 0.5rem 0 0 0.5rem;
+}
+#sendChatButton {
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+.input-group > .form-control:focus {
+    box-shadow: none; /* Quitar sombra al input de chat en focus */
+    border-color: var(--primary-color);
+}
+.input-group-text {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
 }
 
-.status-recibida { background-color: #6c757d; }
-.status-en-proceso { background-color: #ffc107; color: #000; }
-.status-entrevista-agendada { background-color: #198754; }
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 50px 0;
+        min-height: 300px;
+    }
+    .hero-section h1 {
+        font-size: 2.5rem;
+    }
+    .hero-section p {
+        font-size: 1rem;
+    }
+    .navbar-brand {
+        font-size: 1.5rem;
+    }
+    .nav-link {
+        text-align: center;
+        margin: 5px 0;
+    }
+    .chat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.8rem;
+    }
+    #chatModal .modal-dialog {
+        margin: 0.5rem; /* Ajuste el margen del modal en pantallas pequeñas */
+    }
+    #chatMessages {
+        min-height: 150px; /* Menor altura mínima en móvil */
+    }
+    .modal-dialog.modal-xl {
+        max-width: 95%; /* Asegura que el modal XL se ajusta mejor en móvil */
+    }
+}
