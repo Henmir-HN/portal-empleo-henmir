@@ -12,41 +12,46 @@ const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfUIjyERr1AkHt
 // La API Key de Gemini se maneja en el backend (PHP) para mayor seguridad.
 // No es necesaria definirla aquí en el frontend (app.js).
 
-// --- 2. FUNCIÓN CENTRAL PARA LLAMADAS A LA API ---
+// --- 2. FUNCIÓN CENTRAL PARA LLAMADAS A LA API (MODIFICADA PARA USAR EL PROXY) ---
 async function apiCall(endpoint, method = 'GET', data = null) {
-    // La URL se formará correctamente, ej: http://henmir-empleos.ct.ws/api/public-data
-    const url = `${BACKEND_API_URL}${endpoint}`;
-    const options = {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-    };
-    // Incluir token de autenticación si está disponible (para rutas protegidas)
-    const adminToken = localStorage.getItem('adminToken');
-    if (adminToken) {
-        options.headers['Authorization'] = `Bearer ${adminToken}`;
-    }
+    // La URL ahora siempre apunta a nuestro archivo proxy.php
+    const proxyUrl = 'https://henmir-empleos.ct.ws/proxy.php';
 
-    if (data) {
-        options.body = JSON.stringify(data);
-    }
-    try {
-        const response = await fetch(url, options);
-        const responseData = await response.json();
-        if (!response.ok) {
-            // Si es un error 401 (No autorizado) y es para admin, forzar logout
-            // y el endpoint no es /login (ya que /login puede dar 401 por credenciales incorrectas)
-            if (response.status === 401 && endpoint !== '/login') {
-                showAlert('Sesión Expirada', 'Tu sesión ha expirado o no tienes permisos. Por favor, inicia sesión de nuevo.', 'warning', () => logout());
-            }
-            throw new Error(responseData.error || 'Error del servidor');
-        }
-        return { success: true, data: responseData };
-    } catch (error) {
-        console.error(`Fallo en la llamada a la API (${endpoint}):`, error);
-        return { success: false, error: error.message };
-    }
+    // Los detalles de la petición real (endpoint, método, datos) se envían en el cuerpo.
+    const requestBody = {
+        endpoint: endpoint,
+        method: method,
+        data: data
+    };
+
+    const options = {
+        method: 'POST', // Siempre usamos POST para enviar los detalles al proxy
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+    };
+
+    // Incluir token de autenticación si está disponible (el proxy lo reenviará)
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken) {
+        options.headers['Authorization'] = `Bearer ${adminToken}`;
+    }
+
+    try {
+        const response = await fetch(proxyUrl, options);
+        const responseData = await response.json();
+        if (!response.ok) {
+            // El proxy debería devolver los mismos errores que la API real
+            if (response.status === 401 && endpoint !== '/login') {
+                showAlert('Sesión Expirada', 'Tu sesión ha expirado o no tienes permisos. Por favor, inicia sesión de nuevo.', 'warning', () => logout());
+            }
+            throw new Error(responseData.error || 'Error del servidor');
+        }
+        return { success: true, data: responseData };
+    } catch (error) {
+        console.error(`Fallo en la llamada a la API vía Proxy (${endpoint}):`, error);
+        return { success: false, error: error.message };
+    }
 }
-
 // --- 3. LÓGICA DE NAVEGACIÓN Y RENDERIZADO ---
 // Hacemos navigateTo una función global para que onclick pueda acceder a ella
 window.navigateTo = function(pageId) {
