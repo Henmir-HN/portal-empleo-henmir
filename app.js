@@ -6,7 +6,7 @@
 // --- 1. CONFIGURACIÓN ---
 // ¡IMPORTANTE! Esta es la URL de tu nuevo backend en InfinityFree.
 // Le añadimos /api al final porque nuestro enrutador PHP (index.php) espera esa ruta.
-const BACKEND_API_URL = 'http://henmir-empleos.ct.ws/api';
+const BACKEND_API_URL = 'https://henmir-empleos.ct.ws/api';
 
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfUIjyERr1AkHtXv5Dm-aIT2JOjCOtJsSfiMzCREs6HFMwUtw/viewform?usp=header';
 // La API Key de Gemini se maneja en el backend (PHP) para mayor seguridad.
