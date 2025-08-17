@@ -6,23 +6,40 @@
 const API_BASE_URL = 'https://Henmir.pythonanywhere.com/public-api';
 
 // --- 2. LÓGICA DE NAVEGACIÓN (SINGLE PAGE APPLICATION - SPA) ---
+
 const navigateToPage = (targetPageId) => {
+    // Oculta todas las páginas
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    
+    // Muestra la página de destino
     const targetPage = document.getElementById(targetPageId);
     if (targetPage) {
         targetPage.classList.add('active');
     }
+
+    // Actualiza la clase 'active' en los enlaces de la barra de navegación
     document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
         link.classList.remove('active');
         if (link.dataset.pageTarget === targetPageId) {
             link.classList.add('active');
         }
     });
+
+    // Actualiza el hash en la URL
     window.location.hash = `!/${targetPageId}`;
-    const navCollapse = document.getElementById('navbarNav');
-    if (navCollapse.classList.contains('show')) {
-        new bootstrap.Collapse(navCollapse).hide();
+
+    // LÓGICA CORREGIDA Y SEGURA PARA CERRAR EL MENÚ MÓVIL
+    const navCollapseEl = document.getElementById('navbarNav');
+    // Solo intenta cerrar el menú si el elemento existe Y si está visible (en modo móvil)
+    if (navCollapseEl && navCollapseEl.classList.contains('show')) {
+        // Usamos el método seguro de Bootstrap para obtener la instancia del componente
+        const bsCollapse = bootstrap.Collapse.getInstance(navCollapseEl);
+        if (bsCollapse) {
+            bsCollapse.hide();
+        }
     }
+    
+    // Desplaza la vista al inicio de la página
     window.scrollTo(0, 0);
 };
 
