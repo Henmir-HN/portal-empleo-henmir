@@ -2,11 +2,32 @@
 // =================== SCRIPT PÚBLICO DE HENMIR (CORREGIDO) =========
 // ==================================================================
 console.log("app.js: El archivo se ha cargado y se está ejecutando.");
-// --- 1. CONFIGURACIÓN GLOBAL ---
+
+// --- 1. CONFIGURACIÓN GLOBAL CORREGIDA ---
+// Mantener 'public-api' como está en tu Flask app
 const API_BASE_URL = 'https://HenmirApp.pythonanywhere.com/public-api';
 
-// --- 2. LÓGICA DE NAVEGACIÓN (SINGLE PAGE APPLICATION - SPA) ---
+// Función para verificar la conexión con el servidor
+const testConnection = async () => {
+    try {
+        console.log("Probando conexión con:", API_BASE_URL);
+        const response = await fetch(`${API_BASE_URL}/vacancies`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        console.log("Estado de respuesta:", response.status);
+        const data = await response.json();
+        console.log("Respuesta del servidor:", data);
+        return { success: true, data };
+    } catch (error) {
+        console.error("Error de conexión:", error);
+        return { success: false, error: error.message };
+    }
+};
 
+// --- 2. LÓGICA DE NAVEGACIÓN (SINGLE PAGE APPLICATION - SPA) ---
 const navigateToPage = (targetPageId) => {
     // Oculta todas las páginas
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -28,9 +49,8 @@ const navigateToPage = (targetPageId) => {
     // Actualiza el hash en la URL
     window.location.hash = `!/${targetPageId}`;
 
-    // --- LA CORRECCIÓN CLAVE ESTÁ AQUÍ ---
+    // Corrección para Bootstrap
     const navCollapseEl = document.getElementById('navbarNav');
-    // ANTES de usar el objeto 'bootstrap', comprobamos que exista con 'typeof bootstrap !== 'undefined''
     if (navCollapseEl && navCollapseEl.classList.contains('show') && typeof bootstrap !== 'undefined') {
         const bsCollapse = bootstrap.Collapse.getInstance(navCollapseEl);
         if (bsCollapse) {
@@ -38,15 +58,38 @@ const navigateToPage = (targetPageId) => {
         }
     }
     
-    // Desplaza la vista al inicio de la página
     window.scrollTo(0, 0);
 };
 
-// --- 3. COMUNICACIÓN CON LA API ---
+// --- 3. COMUNICACIÓN CON LA API MEJORADA ---
 const apiCall = async (endpoint, options = {}) => {
     try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+        console.log(`Realizando llamada API a: ${API_BASE_URL}${endpoint}`);
+        
+        // Configuración por defecto
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        };
+
+        // Combinar opciones
+        const finalOptions = {
+            ...defaultOptions,
+            ...options,
+            headers: {
+                ...defaultOptions.headers,
+                ...(options.headers || {})
+            }
+        };
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, finalOptions);
+        console.log(`Respuesta recibida. Status: ${response.status}`);
+        
         const data = await response.json();
+        console.log("Datos recibidos:", data);
+        
         if (!response.ok || !data.success) {
             throw new Error(data.error || `Error del servidor: ${response.status}`);
         }
@@ -71,9 +114,9 @@ const renderVacancies = (vacancies, container) => {
         <div class="col-md-6 col-lg-4">
             <div class="card job-card h-100">
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">${v.puesto || 'Puesto no especificado'}</h5>
-                    <p class="text-secondary"><i class="bi bi-geo-alt me-2"></i>${v.ciudad || 'No especificada'}</p>
-                    <p class="card-text small">${v.requisitos ? v.requisitos.substring(0, 120) + '...' : 'Requisitos no detallados.'}</p>
+                    <h5 class="card-title">${v.puesto || v.cargo_solicitado || 'Puesto no especificado'}</h5>
+                    <p class="text-secondary"><i class="bi bi-geo-alt me-2"></i>${v.ciudad || v.ubicacion || 'No especificada'}</p>
+                    <p class="card-text small">${v.requisitos || v.descripcion ? (v.requisitos || v.descripcion).substring(0, 120) + '...' : 'Requisitos no detallados.'}</p>
                     <div class="mt-auto pt-3">
                          <a href="#" class="btn btn-primary w-100" onclick="alert('Funcionalidad de solicitud de postulación no implementada aún.')">Ver Detalles y Aplicar</a>
                     </div>
@@ -86,10 +129,10 @@ const renderVacancies = (vacancies, container) => {
 const renderStatusResults = (result) => {
     const container = document.getElementById('status-results-container');
     if (!result.success) {
-        container.innerHTML = `<div class="alert alert-danger text-center mt-4">${result.error}</div>`;
+        container.innerHTML = `<div class="alert alert-danger text-center mt-4">Error: ${result.error}</div>`;
         return;
     }
-    const { data } = result;
+    const data = result.data;
     let content = '';
     if (data.status === 'not_registered') {
         content = `<div class="card p-4 text-center mt-4"><h4 class="text-danger">Candidato No Encontrado</h4><p>No pudimos encontrar tu perfil. Por favor, verifica el número o <a href="#!/page-register" data-page-target="page-register">regístrate aquí</a>.</p></div>`;
@@ -139,12 +182,12 @@ const handleStatusCheckSubmit = async (event) => {
 const loadInitialData = async () => {
     console.log("app.js: Entrando en loadInitialData().");
     const featuredVacanciesContainer = document.getElementById('featured-vacancies-container');
-    console.log("app.js: A punto de llamar a la API.");
+    console.log("app.js: A punto de llamar a la API para vacantes.");
     const vacanciesResult = await apiCall('/vacancies');
     if (vacanciesResult.success) {
         renderVacancies(vacanciesResult.data.slice(0, 3), featuredVacanciesContainer);
     } else {
-        featuredVacanciesContainer.innerHTML = `<div class="col-12 text-center"><p class="text-danger">No se pudieron cargar las vacantes.</p></div>`;
+        featuredVacanciesContainer.innerHTML = `<div class="col-12 text-center"><p class="text-danger">No se pudieron cargar las vacantes: ${vacanciesResult.error}</p></div>`;
     }
 };
 
@@ -155,12 +198,26 @@ const loadAllVacancies = async () => {
     if (result.success) {
         renderVacancies(result.data, allVacanciesContainer);
     } else {
-        allVacanciesContainer.innerHTML = `<div class="col-12 text-center"><p class="text-danger">No se pudieron cargar las vacantes.</p></div>`;
+        allVacanciesContainer.innerHTML = `<div class="col-12 text-center"><p class="text-danger">No se pudieron cargar las vacantes: ${result.error}</p></div>`;
     }
 };
 
 // --- PUNTO DE ENTRADA ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("Documento cargado, iniciando aplicación...");
+    
+    // Probar conexión al servidor
+    const connectionTest = await testConnection();
+    if (!connectionTest.success) {
+        console.error("No se pudo conectar al servidor:", connectionTest.error);
+        // Mostrar mensaje de error en la interfaz si es necesario
+        const errorContainer = document.getElementById('connection-error');
+        if (errorContainer) {
+            errorContainer.innerHTML = `<div class="alert alert-danger">Error de conexión: ${connectionTest.error}</div>`;
+        }
+    } else {
+        console.log("Conexión exitosa al servidor");
+    }
 
     document.body.addEventListener('click', (event) => {
         const link = event.target.closest('[data-page-target]');
@@ -192,11 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadAllVacancies();
             }
         } catch (error) {
-            console.error("Ocurrió un error durante la carga inicial de la página, pero se intentará continuar.", error);
+            console.error("Ocurrió un error durante la carga inicial de la página:", error);
         }
     };
 
     window.addEventListener('hashchange', handleInitialLoad);
-
     handleInitialLoad();
 });
