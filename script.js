@@ -160,25 +160,60 @@ const loadAllVacancies = async () => {
 
 // --- PUNTO DE ENTRADA ---
 document.addEventListener('DOMContentLoaded', () => {
+
+    // MANEJADOR DE CLICS PARA LA NAVEGACIÓN
+    // Este manejador de eventos se encarga de cambiar de página cuando se hace clic en un enlace.
     document.body.addEventListener('click', (event) => {
         const link = event.target.closest('[data-page-target]');
         if (link) {
             event.preventDefault();
             const pageId = link.dataset.pageTarget;
             navigateToPage(pageId);
-            if (pageId === 'page-vacancies') loadAllVacancies();
+
+            // Si la página a la que navegamos es la de "Ver Vacantes", cargamos todas las vacantes.
+            if (pageId === 'page-vacancies') {
+                loadAllVacancies();
+            }
         }
     });
 
-    document.getElementById('status-check-form').addEventListener('submit', handleStatusCheckSubmit);
-    
+    // MANEJADOR PARA EL FORMULARIO DE CONSULTA DE ESTADO
+    // Se asegura de que el formulario exista antes de añadir el listener para evitar errores.
+    const statusForm = document.getElementById('status-check-form');
+    if (statusForm) {
+        statusForm.addEventListener('submit', handleStatusCheckSubmit);
+    }
+
+    // FUNCIÓN DE CARGA INICIAL (AHORA MÁS SEGURA)
     const handleInitialLoad = () => {
-        const initialPageId = window.location.hash.substring(3) || 'page-home';
-        navigateToPage(initialPageId);
-        if (initialPageId === 'page-home') loadInitialData();
-        if (initialPageId === 'page-vacancies') loadAllVacancies();
+        try {
+            // Se determina la página a mostrar basándose en la URL (el "hash").
+            const initialPageId = window.location.hash.substring(3) || 'page-home';
+            navigateToPage(initialPageId);
+
+            // LÓGICA DE CARGA DE DATOS
+            // Si estamos en la página de inicio, cargamos los datos iniciales (vacantes destacadas).
+            if (initialPageId === 'page-home') {
+                console.log("Página de inicio detectada. Intentando cargar datos iniciales...");
+                loadInitialData();
+            }
+            // Si la URL inicial ya apunta a la página de vacantes, las cargamos todas.
+            if (initialPageId === 'page-vacancies') {
+                console.log("Página de vacantes detectada. Intentando cargar todas las vacantes...");
+                loadAllVacancies();
+            }
+        } catch (error) {
+            // Este bloque catch es nuestra red de seguridad.
+            // Si el error de Bootstrap (o cualquier otro) ocurre durante la navegación inicial,
+            // lo mostraremos en la consola pero no detendrá la ejecución del resto del código.
+            console.error("Ocurrió un error durante la carga inicial de la página, pero se intentará continuar.", error);
+        }
     };
-    
+
+    // EVENT LISTENER PARA CAMBIOS EN LA URL (CUANDO EL USUARIO USA LOS BOTONES "ATRÁS/ADELANTE")
     window.addEventListener('hashchange', handleInitialLoad);
+
+    // EJECUCIÓN INICIAL
+    // Llamamos a la función de carga por primera vez cuando el documento está listo.
     handleInitialLoad();
 });
