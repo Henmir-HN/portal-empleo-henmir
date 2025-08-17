@@ -3,7 +3,7 @@
 // ==================================================================
 
 // --- 1. CONFIGURACIÓN GLOBAL ---
-const API_BASE_URL = 'https://Henmir.pythonanywhere.com/public-api';
+const API_BASE_URL = 'https://HenmirApp.pythonanywhere.com/public-api';
 
 // --- 2. LÓGICA DE NAVEGACIÓN (SINGLE PAGE APPLICATION - SPA) ---
 
