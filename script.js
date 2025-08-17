@@ -1,7 +1,7 @@
 // ==================================================================
 // =================== SCRIPT PÚBLICO DE HENMIR ===================
 // ==================================================================
-
+console.log("app.js: El archivo se ha cargado y se está ejecutando.");
 // --- 1. CONFIGURACIÓN GLOBAL ---
 const API_BASE_URL = 'https://HenmirApp.pythonanywhere.com/public-api';
 
@@ -138,7 +138,9 @@ const handleStatusCheckSubmit = async (event) => {
 };
 
 const loadInitialData = async () => {
+    console.log("app.js: Entrando en loadInitialData().");
     const featuredVacanciesContainer = document.getElementById('featured-vacancies-container');
+    console.log("app.js: A punto de llamar a la API.");
     const vacanciesResult = await apiCall('/vacancies');
     if (vacanciesResult.success) {
         renderVacancies(vacanciesResult.data.slice(0, 3), featuredVacanciesContainer);
