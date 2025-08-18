@@ -1,295 +1,501 @@
-/* ================================================================== */
-/* =================== HOJA DE ESTILOS DE HENMIR ==================== */
-/* ================================================================== */
-/* Este archivo define la apariencia visual de toda la página web. */
-
-
-/* --- 1. PALETA DE COLORES Y VARIABLES GLOBALES --- */
-/* ------------------------------------------------- */
-/* Usamos variables CSS (:root) para definir nuestra paleta de colores.
-   Esto facilita la personalización del diseño en el futuro, ya que
-   solo necesitamos cambiar los colores en un solo lugar. */
 :root {
-    /* Paleta de Colores: Corporativa y Tecnológica */
-    --primary: hsl(217, 91%, 60%);        /* Azul Intenso para botones y enlaces principales */
-    --primary-light: hsl(217, 91%, 95%);  /* Un azul muy claro para fondos sutiles (ej. badges) */
-    --primary-dark: hsl(217, 91%, 50%);   /* Azul más oscuro para el estado :hover de los botones */
-    
-    --accent: hsl(322, 91%, 55%);         /* Magenta/Rosa para botones de llamada a la acción secundarios */
-    --accent-dark: hsl(322, 91%, 45%);    /* Versión oscura del acento para el :hover */
-    
-    --bg-light: hsl(210, 40%, 98%);       /* Gris casi blanco para el fondo general de la página */
-    --text-dark: hsl(215, 28%, 17%);      /* Color de texto principal (casi negro) para máxima legibilidad */
-    --text-light: hsl(217, 8%, 45%);      /* Gris más claro para párrafos y texto secundario */
-    --text-secondary: hsl(217, 8%, 45%);  /* Alias para --text-light */
-    
-    --border-color: hsl(210, 40%, 91%);   /* Color para bordes sutiles en tarjetas y otros elementos */
-    --white: #ffffff;
-    
-    /* Sombras para dar profundidad a los elementos */
-    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
-    
-    /* Transición estándar para animaciones suaves */
-    --transition: all 0.3s ease-in-out;
-}
+            --primary: #3730ca;
+            --primary-light: #EEF2FF;
+            --primary-dark: #3b31bd;
+            --accent: #047aa8;
+            --accent-dark: #BE185D;
+            --success: #059669;
+            --warning: #D97706;
+            --danger: #DC2626;
+            --bg-light: #FAFBFC;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #280097 100%);
+            --text-dark: #1F2937;
+            --text-light: #6B7280;
+            --border-color: #E5E7EB;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-radius: 12px;
+            --border-radius-lg: 16px;
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-/* --- 2. ESTILOS GENERALES Y TIPOGRAFÍA --- */
-/* ------------------------------------------- */
-body { 
-    font-family: 'Inter', sans-serif; /* Fuente principal para párrafos y texto general */
-    background-color: var(--bg-light); 
-    color: var(--text-dark); 
-    line-height: 1.6; /* Espaciado de línea para mejor legibilidad */
-}
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
 
-/* Títulos y encabezados usan una fuente diferente para mayor impacto visual */
-h1, h2, h3, h4, h5, h6 { 
-    font-family: 'Manrope', sans-serif; 
-    font-weight: 800; /* Fuente en negrita para destacar */
-}
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            line-height: 1.3;
+        }
 
-/* Clases de utilidad para colores */
-.text-primary { color: var(--primary) !important; }
-.text-secondary { color: var(--text-secondary) !important; }
+        /* Loading Animation */
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
 
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-/* --- 3. BARRA DE NAVEGACIÓN --- */
-/* ------------------------------ */
-.navbar { 
-    /* Efecto "Glassmorphism": fondo semitransparente con desenfoque */
-    background-color: hsla(210, 40%, 98%, 0.8); 
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); /* Para compatibilidad con Safari */
-    border-bottom: 1px solid var(--border-color); 
-    transition: var(--transition); 
-}
+        .slide-in-left {
+            animation: slideInLeft 0.8s ease-out;
+        }
 
-.navbar-brand { 
-    color: var(--primary); 
-    font-weight: 800; 
-}
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-.nav-link { 
-    color: var(--text-dark) !important; 
-    font-weight: 600; 
-    position: relative; 
-    padding-bottom: 8px !important; 
-}
+        .slide-in-right {
+            animation: slideInRight 0.8s ease-out;
+        }
 
-/* Línea animada debajo de los enlaces de navegación */
-.nav-link::after { 
-    content: ''; 
-    position: absolute; 
-    bottom: 0; 
-    left: 0; 
-    right: 0; 
-    height: 3px; 
-    background-color: var(--primary); 
-    border-radius: 3px; 
-    transform: scaleX(0); /* Inicialmente la línea está oculta */
-    transition: var(--transition); 
-}
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-/* La línea aparece al pasar el cursor o cuando el enlace está activo */
-.nav-link:hover::after, .nav-link.active::after { 
-    transform: scaleX(1); 
-}
+        /* Navbar */
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+            padding: 1rem 0;
+        }
 
-/* El enlace activo también cambia de color para destacar más */
-.nav-link.active { 
-    color: var(--primary) !important; 
-}
+        .navbar.scrolled {
+            background-color: rgba(255, 255, 255, 0.98);
+            box-shadow: var(--shadow-md);
+            padding: 0.5rem 0;
+        }
 
+        .navbar-brand {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1.5rem;
+            transition: var(--transition);
+        }
 
-/* --- 4. BOTONES --- */
-/* ------------------ */
-.btn { 
-    border-radius: 0.5rem; 
-    padding: 0.75rem 1.5rem; 
-    font-weight: 600; 
-    transition: var(--transition); 
-    box-shadow: var(--shadow-sm); 
-}
+        .navbar-brand:hover {
+            color: var(--primary-dark);
+            transform: scale(1.05);
+        }
 
-/* Efecto sutil de "elevación" al pasar el cursor sobre un botón */
-.btn:hover { 
-    transform: translateY(-2px); 
-    box-shadow: var(--shadow-md); 
-}
+        .nav-link {
+            color: var(--text-dark) !important;
+            font-weight: 500;
+            position: relative;
+            padding: 0.5rem 1rem !important;
+            margin: 0 0.25rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
 
-.btn-primary { 
-    background-color: var(--primary); 
-    border-color: var(--primary); 
-}
-.btn-primary:hover { 
-    background-color: var(--primary-dark); 
-    border-color: var(--primary-dark); 
-}
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: var(--transition);
+            transform: translateX(-50%);
+        }
 
-.btn-accent { 
-    background-color: var(--accent); 
-    border-color: var(--accent); 
-    color: var(--white); 
-}
-.btn-accent:hover { 
-    background-color: var(--accent-dark); 
-    border-color: var(--accent-dark); 
-}
+        .nav-link:hover::before,
+        .nav-link.active::before {
+            width: 80%;
+        }
 
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary) !important;
+            background-color: var(--primary-light);
+        }
 
-/* --- 5. SECCIÓN HERO (PORTADA) --- */
-/* --------------------------------- */
-.hero-section { 
-    padding: 6rem 0; 
-}
-.hero-section h1 { 
-    font-size: 3.5rem; 
-    line-height: 1.2; 
-}
-.hero-section .lead { 
-    font-size: 1.25rem; 
-    color: var(--text-light); 
-}
-.hero-image { 
-    border-radius: 1rem; 
-    box-shadow: var(--shadow-md); 
-}
+        /* Buttons */
+        .btn {
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: var(--transition);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
 
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
 
-/* --- 6. SECCIONES Y TARJETAS (CARDS) --- */
-/* ----------------------------------------- */
-.section-title { 
-    font-weight: 800; 
-    margin-bottom: 3rem; 
-}
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
 
-.card { 
-    border: 1px solid var(--border-color); 
-    border-radius: 1rem; 
-    box-shadow: var(--shadow-sm); 
-    transition: var(--transition); 
-    height: 100%; 
-    overflow: hidden; 
-}
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
 
-/* Efecto de elevación y borde resaltado al pasar el cursor sobre una tarjeta */
-.card:hover { 
-    transform: translateY(-5px); 
-    box-shadow: var(--shadow-md); 
-    border-color: var(--primary); 
-}
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
 
-.card-img-top { 
-    transition: transform 0.3s ease; 
-}
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: white;
+        }
 
-/* Efecto de zoom sutil en la imagen de la tarjeta al pasar el cursor */
-.card:hover .card-img-top { 
-    transform: scale(1.05); 
-}
+        .btn-outline-primary {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
 
-/* Estilos específicos para las tarjetas de vacantes (job-card) */
-.job-card .card-header { 
-    background-color: transparent; 
-    border-bottom: 1px solid var(--border-color); 
-    padding: 1rem 1.5rem; 
-}
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: white;
+        }
 
-.job-icon { 
-    width: 50px; 
-    height: 50px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    background-color: var(--primary-light); 
-    color: var(--primary); 
-    border-radius: 0.75rem; 
-    font-size: 1.5rem; 
-}
+        /* Hero Section */
+        .hero-section {
+            background: var(--bg-gradient);
+            padding: 8rem 0 6rem;
+            position: relative;
+            overflow: hidden;
+        }
 
-/* Estilos específicos para las tarjetas de noticias (post-card) */
-.post-card .card-title { 
-    font-weight: 600; 
-}
-.post-card .card-text { 
-    color: var(--text-light); 
-}
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,255,255,0.1)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><circle cx="200" cy="200" r="100" fill="url(%23a)"/><circle cx="800" cy="300" r="150" fill="url(%23a)"/><circle cx="300" cy="700" r="120" fill="url(%23a)"/></svg>');
+            opacity: 0.6;
+            animation: float 20s ease-in-out infinite;
+        }
 
-/* Permite que toda la tarjeta sea clickeable en los posts (usado con la clase .stretched-link de Bootstrap) */
-.stretched-link::after { 
-    content: ""; 
-    position: absolute; 
-    top: 0; right: 0; bottom: 0; left: 0; 
-    z-index: 1; 
-    pointer-events: auto; 
-    background-color: rgba(0,0,0,0); 
-}
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
 
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: white;
+        }
 
-/* --- 7. CONTROL DE PÁGINAS PARA LA SPA --- */
-/* ------------------------------------------- */
-/* Por defecto, todas las "páginas" (divs) están ocultas. */
-.page { 
-    display: none; 
-}
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-/* La clase 'active' se añade con JavaScript para mostrar la página actual. */
-.page.active { 
-    display: block; 
-    /* Animación sutil de aparición para una transición suave */
-    animation: fadeIn 0.5s ease-out;
-}
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+        .hero-image {
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-xl);
+            transform: perspective(1000px) rotateY(-5deg);
+            transition: var(--transition);
+        }
 
+        .hero-image:hover {
+            transform: perspective(1000px) rotateY(0deg) scale(1.02);
+        }
 
-/* --- 8. PIE DE PÁGINA (FOOTER) --- */
-/* --------------------------------- */
-footer { 
-    background-color: var(--text-dark); 
-    color: hsl(210, 40%, 80%); 
-    padding: 3rem 0;
-    margin-top: 4rem;
-}
-footer a { 
-    color: hsl(210, 40%, 80%); 
-    text-decoration: none; 
-    transition: var(--transition); 
-}
-footer a:hover { 
-    color: var(--white); 
-}
-footer .footer-title { 
-    color: var(--white); 
-    font-weight: 600; 
-}
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            overflow: hidden;
+            background: white;
+        }
 
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+        }
 
-/* --- 9. AJUSTES PARA DISPOSITIVOS MÓVILES (RESPONSIVE) --- */
-/* --------------------------------------------------------- */
-@media (max-width: 768px) {
-    .hero-section {
-        padding: 4rem 0;
-        text-align: center;
-    }
-    .hero-section h1 {
-        font-size: 2.5rem;
-    }
-    .hero-section .lead {
-        font-size: 1.1rem;
-    }
-    .section-title {
-        font-size: 2rem;
-    }
-}
+        .job-card {
+            position: relative;
+        }
+
+        .job-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: var(--transition);
+        }
+
+        .job-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .job-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge-custom {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        /* Section Styles */
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .section-padding {
+            padding: 6rem 0;
+        }
+
+        /* Stats Section */
+        .stats-item {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .stats-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stats-label {
+            color: var(--text-light);
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        /* Form Styles */
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 0.875rem 1rem;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        /* Loading States */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .spinner-custom {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--primary-light);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Page Navigation */
+        .page {
+            display: none;
+            min-height: 80vh;
+        }
+
+        .page.active {
+            display: block;
+            animation: pageSlideIn 0.5s ease-out;
+        }
+
+        @keyframes pageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 4rem 0 2rem;
+            margin-top: 6rem;
+        }
+
+        .footer-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        footer a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        footer a:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: var(--border-radius-lg);
+            border: none;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .section-padding {
+                padding: 4rem 0;
+            }
+            
+            .hero-section {
+                padding: 4rem 0;
+            }
+        }

@@ -1,80 +1,72 @@
-// ==================================================================
-// =================== SCRIPT PÚBLICO DE HENMIR (CORREGIDO) =========
-// ==================================================================
-console.log("app.js: El archivo se ha cargado y se está ejecutando.");
-
-// --- 1. CONFIGURACIÓN GLOBAL CORREGIDA ---
-// URL CORREGIDA: henmir (no HenmirApp)
+// Global Configuration
 const API_BASE_URL = 'https://henmir.pythonanywhere.com/public-api';
-
-// Función para verificar la conexión con el servidor
-const testConnection = async () => {
-    try {
-        console.log("Probando conexión con:", API_BASE_URL);
-        const response = await fetch(`${API_BASE_URL}/vacancies`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        console.log("Estado de respuesta:", response.status);
-        const data = await response.json();
-        console.log("Respuesta del servidor:", data);
-        return { success: true, data };
-    } catch (error) {
-        console.error("Error de conexión:", error);
-        return { success: false, error: error.message };
+let appData = {
+    vacancies: [],
+    posts: [],
+    lastFetch: {
+        vacancies: 0,
+        posts: 0
     }
 };
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-// --- 2. LÓGICA DE NAVEGACIÓN (SINGLE PAGE APPLICATION - SPA) ---
-const navigateToPage = (targetPageId) => {
-    // Oculta todas las páginas
-    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    
-    // Muestra la página de destino
-    const targetPage = document.getElementById(targetPageId);
-    if (targetPage) {
-        targetPage.classList.add('active');
-    }
+// Utility Functions
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
-    // Actualiza la clase 'active' en los enlaces de la barra de navegación
-    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
-        link.classList.remove('active');
-        if (link.dataset.pageTarget === targetPageId) {
-            link.classList.add('active');
-        }
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString('es-HN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
+}
 
-    // Actualiza el hash en la URL
-    window.location.hash = `!/${targetPageId}`;
+function showToast(message, type = 'info') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close ms-auto" onclick="this.parentElement.remove()"></button>
+    `;
+    document.body.appendChild(toast);
 
-    // Corrección para Bootstrap
-    const navCollapseEl = document.getElementById('navbarNav');
-    if (navCollapseEl && navCollapseEl.classList.contains('show') && typeof bootstrap !== 'undefined') {
-        const bsCollapse = bootstrap.Collapse.getInstance(navCollapseEl);
-        if (bsCollapse) {
-            bsCollapse.hide();
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
         }
-    }
-    
-    window.scrollTo(0, 0);
-};
+    }, 5000);
+}
 
-// --- 3. COMUNICACIÓN CON LA API MEJORADA ---
-const apiCall = async (endpoint, options = {}) => {
+// API Functions
+async function apiCall(endpoint, options = {}) {
     try {
-        console.log(`Realizando llamada API a: ${API_BASE_URL}${endpoint}`);
+        console.log(`API Call: ${API_BASE_URL}${endpoint}`);
         
-        // Configuración por defecto
         const defaultOptions = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
+            headers: {} // Inicia con headers vacíos
         };
 
-        // Combinar opciones
+        // Lógica clave: Solo establece Content-Type si el body NO es FormData.
+        // El navegador se encarga de establecer el Content-Type correcto para subida de archivos.
+        if (!(options.body instanceof FormData)) {
+            defaultOptions.headers['Content-Type'] = 'application/json';
+            defaultOptions.headers['Accept'] = 'application/json';
+        }
+
         const finalOptions = {
             ...defaultOptions,
             ...options,
@@ -85,174 +77,756 @@ const apiCall = async (endpoint, options = {}) => {
         };
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, finalOptions);
-        console.log(`Respuesta recibida. Status: ${response.status}`);
         
-        const data = await response.json();
-        console.log("Datos recibidos:", data);
+        // Intenta parsear la respuesta como JSON, maneja el caso de que no haya contenido
+        const textResponse = await response.text();
+        const data = textResponse ? JSON.parse(textResponse) : {};
         
-        if (!response.ok || !data.success) {
+        if (!response.ok) {
             throw new Error(data.error || `Error del servidor: ${response.status}`);
         }
+
+        // Asumimos que la respuesta siempre tiene una estructura { success: boolean, ... }
+        if (data.success === false) {
+             throw new Error(data.error || `La API reportó un fallo.`);
+        }
+
         return { success: true, data: data.data };
     } catch (error) {
-        console.error(`Error en API (${endpoint}):`, error);
+        console.error(`API Error (${endpoint}):`, error);
         return { success: false, error: error.message };
     }
-};
+}
 
-// --- 4. RENDERIZADO DE CONTENIDO ---
-const showSpinner = (container) => {
-    container.innerHTML = `<div class="col-12 text-center p-5"><div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"><span class="visually-hidden">Cargando...</span></div></div>`;
-};
+// Cache Management
+function shouldFetchData(dataType) {
+    const now = Date.now();
+    const lastFetch = appData.lastFetch[dataType] || 0;
+    return now - lastFetch > CACHE_DURATION;
+}
 
-const renderVacancies = (vacancies, container) => {
+function setCacheTimestamp(dataType) {
+    appData.lastFetch[dataType] = Date.now();
+}
+
+// Data Loading Functions
+async function loadVacancies(forceRefresh = false) {
+    if (!forceRefresh && appData.vacancies.length > 0 && !shouldFetchData('vacancies')) {
+        return { success: true, data: appData.vacancies };
+    }
+
+    const result = await apiCall('/vacancies');
+    if (result.success) {
+        appData.vacancies = result.data;
+        setCacheTimestamp('vacancies');
+    }
+    return result;
+}
+
+// Static Posts Data (easy to modify without backend changes)
+function getStaticPosts() {
+    return [
+        {
+            id: 1,
+            title: "Cómo Preparar una Entrevista de Trabajo Exitosa",
+            excerpt: "Consejos esenciales para destacar en tu próxima entrevista laboral y conseguir el trabajo de tus sueños.",
+            content: `
+                <h4>Preparación antes de la entrevista</h4>
+                <p>La preparación es clave para el éxito en cualquier entrevista. Investiga sobre la empresa, sus valores y la posición específica.</p>
+                <h5>Pasos importantes:</h5>
+                <ul>
+                    <li>Investiga la empresa y el puesto</li>
+                    <li>Prepara respuestas para preguntas comunes</li>
+                    <li>Practica tu presentación personal</li>
+                    <li>Prepara preguntas inteligentes sobre la empresa</li>
+                    <li>Planifica tu vestimenta profesional</li>
+                </ul>
+                <p>Recuerda: una buena preparación te dará la confianza necesaria para brillar en la entrevista.</p>
+            `,
+            image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
+            date: "2024-08-15",
+            author: "Equipo Henmir"
+        },
+        {
+            id: 2,
+            title: "Las Habilidades Más Demandadas en 2024",
+            excerpt: "Descubre cuáles son las competencias que los empleadores valoran más en el mercado laboral actual.",
+            content: `
+                <h4>Habilidades Técnicas</h4>
+                <ul>
+                    <li>Competencias digitales básicas</li>
+                    <li>Manejo de herramientas de productividad</li>
+                    <li>Análisis de datos básico</li>
+                    <li>Marketing digital</li>
+                </ul>
+                <h4>Habilidades Blandas</h4>
+                <ul>
+                    <li>Comunicación efectiva</li>
+                    <li>Trabajo en equipo</li>
+                    <li>Adaptabilidad</li>
+                    <li>Liderazgo</li>
+                    <li>Pensamiento crítico</li>
+                </ul>
+                <p>El futuro del trabajo requiere una combinación equilibrada de habilidades técnicas y blandas.</p>
+            `,
+            image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=400&auto=format&fit=crop",
+            date: "2024-08-10",
+            author: "Ana García"
+        },
+        {
+            id: 3,
+            title: "Cómo Crear un CV Que Destaque",
+            excerpt: "Tips profesionales para diseñar un curriculum vitae que capture la atención de los reclutadores.",
+            content: `
+                <h4>Estructura de un CV efectivo</h4>
+                <ol>
+                    <li><strong>Datos personales:</strong> Información de contacto actualizada</li>
+                    <li><strong>Perfil profesional:</strong> Un resumen impactante de 2-3 líneas</li>
+                    <li><strong>Experiencia laboral:</strong> Logros cuantificables y relevantes</li>
+                    <li><strong>Educación:</strong> Títulos y certificaciones importantes</li>
+                    <li><strong>Habilidades:</strong> Competencias clave para el puesto</li>
+                </ol>
+                <h4>Consejos importantes</h4>
+                <ul>
+                    <li>Mantén el CV en máximo 2 páginas</li>
+                    <li>Usa un diseño limpio y profesional</li>
+                    <li>Adapta el contenido para cada aplicación</li>
+                    <li>Revisa la ortografía y gramática</li>
+                </ul>
+            `,
+            image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=400&auto=format&fit=crop",
+            date: "2024-08-05",
+            author: "Carlos López"
+        }
+    ];
+}
+
+// Render Functions
+function renderVacancies(vacancies, container, limit = null) {
     if (!vacancies || vacancies.length === 0) {
-        container.innerHTML = '<div class="col-12 text-center"><p class="lead text-secondary">No hay vacantes disponibles en este momento.</p></div>';
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <div class="job-icon mx-auto mb-3" style="background-color: var(--border-color); color: var(--text-light);">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h5 class="text-muted">No hay vacantes disponibles</h5>
+                <p class="text-muted">¡Regresa pronto! Constantemente agregamos nuevas oportunidades.</p>
+            </div>
+        `;
         return;
     }
-    container.innerHTML = vacancies.map(v => `
-        <div class="col-md-6 col-lg-4">
-            <div class="card job-card h-100">
+
+    const displayVacancies = limit ? vacancies.slice(0, limit) : vacancies;
+    
+    container.innerHTML = displayVacancies.map((vacancy, index) => `
+        <div class="col-lg-4 col-md-6">
+            <div class="card job-card h-100 fade-in" style="animation-delay: ${index * 0.1}s">
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">${v.puesto || v.cargo_solicitado || 'Puesto no especificado'}</h5>
-                    <p class="text-secondary"><i class="bi bi-geo-alt me-2"></i>${v.ciudad || v.ubicacion || 'No especificada'}</p>
-                    <p class="card-text small">${v.requisitos || v.descripcion ? (v.requisitos || v.descripcion).substring(0, 120) + '...' : 'Requisitos no detallados.'}</p>
-                    <div class="mt-auto pt-3">
-                         <a href="#" class="btn btn-primary w-100" onclick="alert('Funcionalidad de solicitud de postulación no implementada aún.')">Ver Detalles y Aplicar</a>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="job-icon me-3">
+                            <i class="bi bi-briefcase"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">${vacancy.puesto || vacancy.cargo_solicitado || 'Puesto no especificado'}</h5>
+                            <div class="d-flex align-items-center text-muted small mb-2">
+                                <i class="bi bi-geo-alt me-1"></i>
+                                <span>${vacancy.ciudad || vacancy.ubicacion || 'No especificada'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="card-text text-muted small flex-grow-1">
+                        ${(vacancy.requisitos || vacancy.descripcion || 'Requisitos no detallados.').substring(0, 120)}...
+                    </p>
+                    
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        ${vacancy.tipo_empleo ? `<span class="badge badge-custom">${vacancy.tipo_empleo}</span>` : ''}
+                        ${vacancy.salario ? `<span class="badge badge-custom">${vacancy.salario}</span>` : ''}
+                    </div>
+                    
+                    <button class="btn btn-primary w-100 mt-auto" onclick="showJobDetails(${JSON.stringify(vacancy).replace(/"/g, '&quot;')})">
+                        <i class="bi bi-eye me-2"></i>Ver Detalles
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderPosts(posts, container, limit = null) {
+    const displayPosts = limit ? posts.slice(0, limit) : posts;
+    
+    container.innerHTML = displayPosts.map((post, index) => `
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 fade-in" style="animation-delay: ${index * 0.1}s">
+                <img src="${post.image}" class="card-img-top" alt="${post.title}" style="height: 200px; object-fit: cover;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">${post.title}</h5>
+                    <p class="card-text text-muted small flex-grow-1">${post.excerpt}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto pt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar me-1"></i>
+                            ${formatDate(post.date)}
+                        </small>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showPostDetails(${post.id})">
+                            Leer más
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     `).join('');
-};
+}
 
-const renderStatusResults = (result) => {
+function renderStatusResults(result) {
     const container = document.getElementById('status-results-container');
+    
     if (!result.success) {
-        container.innerHTML = `<div class="alert alert-danger text-center mt-4">Error: ${result.error}</div>`;
+        container.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                <strong>Error:</strong> ${result.error}
+            </div>
+        `;
         return;
     }
-    const data = result.data;
-    let content = '';
-    if (data.status === 'not_registered') {
-        content = `<div class="card p-4 text-center mt-4"><h4 class="text-danger">Candidato No Encontrado</h4><p>No pudimos encontrar tu perfil. Por favor, verifica el número o <a href="#!/page-register" data-page-target="page-register">regístrate aquí</a>.</p></div>`;
-    } else {
-        content = `<div class="card p-4 mt-4"><h3 class="mb-3">Hola, ${data.candidate_name}</h3>`;
-        if (data.status === 'registered_no_applications') {
-            content += `<p>Encontramos tu perfil, pero no tienes postulaciones activas. ¡Te invitamos a <a href="#!/page-vacancies" data-page-target="page-vacancies">explorar nuestras vacantes</a>!</p>`;
-        } else if (data.status === 'has_applications') {
-            content += `<p>Este es el estado de tus procesos:</p><div class="list-group">`;
-            data.applications.forEach(app => {
-                let badgeClass = 'bg-secondary';
-                if (['En Entrevista', 'Oferta', 'Pre-seleccionado'].includes(app.estado)) badgeClass = 'bg-info text-dark';
-                if (app.estado === 'Contratado') badgeClass = 'bg-success';
-                if (app.estado === 'Rechazado') badgeClass = 'bg-danger';
-                content += `
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">${app.cargo_solicitado}</h5>
-                            <small>Aplicado: ${app.fecha_aplicacion}</small>
-                        </div>
-                        <p class="mb-1">Estado: <span class="badge ${badgeClass}">${app.estado}</span></p>
-                        ${app.fecha_entrevista ? `<small class="text-success fw-bold">Entrevista agendada: ${app.fecha_entrevista}.</small>` : ''}
-                    </div>`;
-            });
-            content += `</div>`;
-        }
-        content += `</div>`;
-    }
-    container.innerHTML = content;
-};
 
-// --- 5. MANEJADORES DE EVENTOS Y LÓGICA DE CARGA ---
-const handleStatusCheckSubmit = async (event) => {
+    const data = result.data;
+    
+    if (data.status === 'not_registered') {
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="job-icon mx-auto mb-3" style="background-color: var(--warning); color: white;">
+                        <i class="bi bi-person-x"></i>
+                    </div>
+                    <h4 class="text-warning mb-3">Candidato No Encontrado</h4>
+                    <p class="text-muted mb-4">No encontramos tu perfil en nuestra base de datos. Verifica tu número de identidad o regístrate con nosotros.</p>
+                    <a href="#" class="btn btn-primary" data-page-target="page-register">
+                        <i class="bi bi-person-plus me-2"></i>Registrarme Ahora
+                    </a>
+                </div>
+            </div>
+        `;
+    } else if (data.status === 'registered_no_applications') {
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="job-icon mx-auto mb-3" style="background-color: var(--primary); color: white;">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                    <h4 class="text-primary mb-3">¡Hola, ${data.candidate_name}!</h4>
+                    <p class="text-muted mb-4">Tu perfil está registrado correctamente, pero aún no tienes postulaciones activas.</p>
+                    <a href="#" class="btn btn-primary" data-page-target="page-vacancies">
+                        <i class="bi bi-search me-2"></i>Explorar Vacantes
+                    </a>
+                </div>
+            </div>
+        `;
+    } else if (data.status === 'has_applications') {
+        const applicationsHtml = data.applications.map(app => {
+            let badgeClass = 'bg-secondary';
+            let badgeIcon = 'clock';
+            
+            if (['En Entrevista', 'Pre-seleccionado'].includes(app.estado)) {
+                badgeClass = 'bg-info';
+                badgeIcon = 'person-video2';
+            } else if (app.estado === 'Oferta') {
+                badgeClass = 'bg-warning text-dark';
+                badgeIcon = 'envelope-check';
+            } else if (app.estado === 'Contratado') {
+                badgeClass = 'bg-success';
+                badgeIcon = 'check-circle';
+            } else if (app.estado === 'Rechazado') {
+                badgeClass = 'bg-danger';
+                badgeIcon = 'x-circle';
+            }
+
+            return `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-0">${app.cargo_solicitado}</h6>
+                            <span class="badge ${badgeClass}">
+                                <i class="bi bi-${badgeIcon} me-1"></i>
+                                ${app.estado}
+                            </span>
+                        </div>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-calendar me-1"></i>
+                            Aplicado: ${formatDate(app.fecha_aplicacion)}
+                        </p>
+                        ${app.fecha_entrevista ? `
+                            <div class="alert alert-info py-2 mb-0">
+                                <i class="bi bi-calendar-event me-2"></i>
+                                <strong>Entrevista programada:</strong> ${formatDate(app.fecha_entrevista)}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-circle me-2"></i>
+                        Hola, ${data.candidate_name}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Este es el estado actual de tus procesos de selección:</p>
+                    ${applicationsHtml}
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Modal Functions
+function showJobDetails(vacancy) {
+    const modal = document.getElementById('jobModal');
+    const modalTitle = document.getElementById('jobModalLabel');
+    const modalBody = document.getElementById('jobModalBody');
+
+    modalTitle.textContent = vacancy.puesto || vacancy.cargo_solicitado || 'Detalles de la Vacante';
+    
+    modalBody.innerHTML = `
+        <div class="row">
+            <div class="col-md-8">
+                <h6 class="text-primary mb-3">Información del Puesto</h6>
+                <div class="mb-3">
+                    <strong>Ubicación:</strong>
+                    <span class="ms-2">${vacancy.ciudad || vacancy.ubicacion || 'No especificada'}</span>
+                </div>
+                ${vacancy.salario ? `
+                    <div class="mb-3">
+                        <strong>Salario:</strong>
+                        <span class="ms-2">${vacancy.salario}</span>
+                    </div>
+                ` : ''}
+                ${vacancy.tipo_empleo ? `
+                    <div class="mb-3">
+                        <strong>Tipo de empleo:</strong>
+                        <span class="ms-2">${vacancy.tipo_empleo}</span>
+                    </div>
+                ` : ''}
+                
+                <h6 class="text-primary mb-3 mt-4">Descripción y Requisitos</h6>
+                <p>${vacancy.requisitos || vacancy.descripcion || 'No se especifican requisitos detallados para esta posición.'}</p>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">¿Interesado?</h6>
+                        <p class="card-text small">Esta vacante coincide con tu perfil. ¡Aplica ahora!</p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check text-success me-2"></i>Proceso transparente</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Seguimiento personalizado</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Asesoría profesional</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    new bootstrap.Modal(modal).show();
+}
+
+function showPostDetails(postId) {
+    const posts = getStaticPosts();
+    const post = posts.find(p => p.id === postId);
+    
+    if (!post) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">${post.title}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="${post.image}" class="img-fluid rounded mb-4" alt="${post.title}">
+                    <div class="d-flex justify-content-between text-muted small mb-4">
+                        <span><i class="bi bi-person me-1"></i>Por ${post.author}</span>
+                        <span><i class="bi bi-calendar me-1"></i>${formatDate(post.date)}</span>
+                    </div>
+                    ${post.content}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+
+    modal.addEventListener('hidden.bs.modal', () => {
+        modal.remove();
+    });
+}
+
+function acceptTerms() {
+    const checkbox = document.getElementById('terms-agreement');
+    if (checkbox) {
+        checkbox.checked = true;
+    }
+}
+
+function applyToJob() {
+    showToast('Para aplicar a esta vacante, necesitas estar registrado en nuestro sistema.', 'info');
+    setTimeout(() => {
+        navigateToPage('page-register');
+        bootstrap.Modal.getInstance(document.getElementById('jobModal')).hide();
+    }, 2000);
+}
+
+// Navigation Functions
+function navigateToPage(targetPageId) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // Show target page
+    const targetPage = document.getElementById(targetPageId);
+    if (targetPage) {
+        targetPage.classList.add('active');
+    }
+
+    // Update navbar active state
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.pageTarget === targetPageId) {
+            link.classList.add('active');
+        }
+    });
+
+    // Update URL hash
+    window.location.hash = `#!/${targetPageId}`;
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Load page-specific data
+    if (targetPageId === 'page-home') {
+        loadHomePage();
+    } else if (targetPageId === 'page-vacancies') {
+        loadVacanciesPage();
+    } else if (targetPageId === 'page-posts') {
+        loadPostsPage();
+    }
+}
+
+// Page Loading Functions
+async function loadHomePage() {
+    const featuredContainer = document.getElementById('featured-vacancies-container');
+    const postsContainer = document.getElementById('featured-posts-container');
+
+    // Load featured vacancies
+    const vacanciesResult = await loadVacancies();
+    if (vacanciesResult.success) {
+        renderVacancies(vacanciesResult.data, featuredContainer, 3);
+    } else {
+        featuredContainer.innerHTML = `
+            <div class="col-12 text-center">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    No se pudieron cargar las vacantes: ${vacanciesResult.error}
+                </div>
+            </div>
+        `;
+    }
+
+    // Load featured posts
+    renderPosts(getStaticPosts(), postsContainer, 3);
+}
+
+async function loadVacanciesPage() {
+    const container = document.getElementById('all-vacancies-container');
+    const countBadge = document.getElementById('vacancy-count');
+
+    // Show loading state
+    container.innerHTML = `
+        <div class="col-12 text-center py-5">
+            <div class="spinner-custom mx-auto"></div>
+            <p class="mt-3 text-muted">Cargando vacantes...</p>
+        </div>
+    `;
+
+    const result = await loadVacancies(true); // Force refresh on vacancies page
+    
+    if (result.success) {
+        renderVacancies(result.data, container);
+        countBadge.textContent = `${result.data.length} vacantes disponibles`;
+    } else {
+        container.innerHTML = `
+            <div class="col-12 text-center">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    Error al cargar vacantes: ${result.error}
+                </div>
+            </div>
+        `;
+        countBadge.textContent = 'Error al cargar';
+    }
+}
+
+function loadPostsPage() {
+    const container = document.getElementById('all-posts-container');
+    renderPosts(getStaticPosts(), container);
+}
+
+// Filter Functions
+function applyFilters() {
+    const locationFilter = document.getElementById('location-filter').value;
+    const areaFilter = document.getElementById('area-filter').value;
+    
+    let filteredVacancies = appData.vacancies;
+    
+    if (locationFilter) {
+        filteredVacancies = filteredVacancies.filter(v => 
+            (v.ciudad || v.ubicacion || '').toLowerCase().includes(locationFilter.toLowerCase())
+        );
+    }
+    
+    if (areaFilter) {
+        filteredVacancies = filteredVacancies.filter(v => 
+            (v.area || v.departamento || v.puesto || '').toLowerCase().includes(areaFilter.toLowerCase())
+        );
+    }
+    
+    const container = document.getElementById('all-vacancies-container');
+    const countBadge = document.getElementById('vacancy-count');
+    
+    renderVacancies(filteredVacancies, container);
+    countBadge.textContent = `${filteredVacancies.length} vacantes encontradas`;
+    
+    showToast(`Se encontraron ${filteredVacancies.length} vacantes que coinciden con tus filtros.`, 'success');
+}
+
+// Form Validation and Submission
+function setupFormValidation() {
+    const forms = document.querySelectorAll('.needs-validation');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            } else {
+                event.preventDefault();
+                handleFormSubmission(form);
+            }
+            
+            form.classList.add('was-validated');
+        });
+    });
+}
+
+// REEMPLAZA LA FUNCIÓN handleFormSubmission COMPLETA CON ESTA VERSIÓN
+async function handleFormSubmission(form) {
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.innerHTML;
+
+    // Deshabilitar botón y mostrar estado de carga
+    submitButton.disabled = true;
+    submitButton.innerHTML = `
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Procesando...
+    `;
+
+    if (form.id === 'registration-form') {
+        // La lógica de registro se manejará en su propia función
+        await handleRegistrationForm(form);
+    } 
+    else if (form.id === 'contact-form') {
+        const contactData = {
+            name: document.getElementById('contact-name').value,
+            email: document.getElementById('contact-email').value,
+            subject: document.getElementById('contact-subject').value,
+            message: document.getElementById('contact-message').value
+        };
+
+        const result = await apiCall('/public-api/contact', {
+            method: 'POST',
+            body: JSON.stringify(contactData)
+        });
+
+        if (result.success) {
+            showToast('¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.', 'success');
+            form.reset();
+            form.classList.remove('was-validated');
+        } else {
+            showToast(`Error al enviar el mensaje: ${result.error || 'Por favor, inténtalo de nuevo.'}`, 'danger');
+        }
+    }
+
+    // Restaurar el botón a su estado original
+    submitButton.disabled = false;
+    submitButton.innerHTML = originalButtonText;
+}
+
+
+async function handleRegistrationForm(form) {
+    const formData = new FormData();
+    
+    // Recopilar datos del formulario
+    formData.append('nombre_completo', document.getElementById('fullName').value);
+    formData.append('identidad', document.getElementById('identityNumber').value);
+    formData.append('telefono', document.getElementById('phone').value);
+    formData.append('email', document.getElementById('email').value);
+    formData.append('ciudad', document.getElementById('city').value);
+    formData.append('grado_academico', document.getElementById('education').value);
+    formData.append('transporte_propio', document.querySelector('input[name="transport"]:checked').value);
+    formData.append('disponibilidad_rotativos', document.querySelector('input[name="shifts"]:checked').value);
+    formData.append('experiencia', document.getElementById('experience').value);
+
+    // Adjuntar el archivo del CV
+    const cvFile = document.getElementById('cv').files[0];
+    if (cvFile) {
+        formData.append('cv_file', cvFile);
+    }
+    
+    // Adjuntar los archivos de identidad (puede ser más de uno)
+    const identityFiles = document.getElementById('identity').files;
+    for (let i = 0; i < identityFiles.length; i++) {
+        formData.append('identidad_files', identityFiles[i]);
+    }
+
+    // --- ESTA ES LA IMPLEMENTACIÓN REAL, SIN SIMULACIÓN ---
+    const result = await apiCall('/public-api/register', {
+        method: 'POST',
+        body: formData // La función apiCall ahora sabe cómo manejar FormData
+    });
+    
+    if (result.success) {
+        showToast('¡Registro exitoso! Te contactaremos cuando tengamos oportunidades que coincidan con tu perfil.', 'success');
+        form.reset();
+        form.classList.remove('was-validated');
+        
+        setTimeout(() => {
+            navigateToPage('page-status');
+        }, 3000);
+    } else {
+        showToast(`Error en el registro: ${result.error || 'Inténtalo de nuevo.'}`, 'danger');
+    }
+}
+
+// Status Check Form Handler
+async function handleStatusCheckSubmit(event) {
     event.preventDefault();
+    
     const identityInput = document.getElementById('status-identity');
     const resultsContainer = document.getElementById('status-results-container');
     const identityNumber = identityInput.value.trim().replace(/-/g, '');
+    
     if (!identityNumber) {
-        resultsContainer.innerHTML = `<div class="alert alert-warning text-center mt-4">Por favor, ingresa un número de identidad.</div>`;
+        resultsContainer.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Por favor, ingresa tu número de identidad.
+            </div>
+        `;
         return;
     }
-    showSpinner(resultsContainer);
+
+    // Show loading state
+    resultsContainer.innerHTML = `
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="spinner-custom mx-auto"></div>
+                <p class="mt-3 text-muted">Consultando tu estado...</p>
+            </div>
+        </div>
+    `;
+
     const result = await apiCall(`/status/${identityNumber}`);
     renderStatusResults(result);
-};
+}
 
-const loadInitialData = async () => {
-    console.log("app.js: Entrando en loadInitialData().");
-    const featuredVacanciesContainer = document.getElementById('featured-vacancies-container');
-    console.log("app.js: A punto de llamar a la API para vacantes.");
-    const vacanciesResult = await apiCall('/vacancies');
-    if (vacanciesResult.success) {
-        renderVacancies(vacanciesResult.data.slice(0, 3), featuredVacanciesContainer);
-    } else {
-        featuredVacanciesContainer.innerHTML = `<div class="col-12 text-center"><p class="text-danger">No se pudieron cargar las vacantes: ${vacanciesResult.error}</p></div>`;
-    }
-};
-
-const loadAllVacancies = async () => {
-    const allVacanciesContainer = document.getElementById('all-vacancies-container');
-    showSpinner(allVacanciesContainer);
-    const result = await apiCall('/vacancies');
-    if (result.success) {
-        renderVacancies(result.data, allVacanciesContainer);
-    } else {
-        allVacanciesContainer.innerHTML = `<div class="col-12 text-center"><p class="text-danger">No se pudieron cargar las vacantes: ${result.error}</p></div>`;
-    }
-};
-
-// --- PUNTO DE ENTRADA ---
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("Documento cargado, iniciando aplicación...");
+// Navbar Scroll Effect
+function setupNavbarScrollEffect() {
+    const navbar = document.getElementById('main-navbar');
     
-    // Probar conexión al servidor
-    const connectionTest = await testConnection();
-    if (!connectionTest.success) {
-        console.error("No se pudo conectar al servidor:", connectionTest.error);
-        // Mostrar mensaje de error en la interfaz si es necesario
-        const errorContainer = document.getElementById('connection-error');
-        if (errorContainer) {
-            errorContainer.innerHTML = `<div class="alert alert-danger">Error de conexión: ${connectionTest.error}</div>`;
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 100) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
         }
-    } else {
-        console.log("Conexión exitosa al servidor");
-    }
+    });
+}
 
+// Initialize Application
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Henmir Application Loading...');
+
+    // Setup navbar scroll effect
+    setupNavbarScrollEffect();
+
+    // Setup form validation
+    setupFormValidation();
+
+    // Setup navigation event listeners
     document.body.addEventListener('click', (event) => {
         const link = event.target.closest('[data-page-target]');
         if (link) {
             event.preventDefault();
             const pageId = link.dataset.pageTarget;
             navigateToPage(pageId);
-            if (pageId === 'page-vacancies') {
-                loadAllVacancies();
-            }
         }
     });
 
+    // Setup status check form
     const statusForm = document.getElementById('status-check-form');
     if (statusForm) {
         statusForm.addEventListener('submit', handleStatusCheckSubmit);
     }
 
+    // Setup navbar collapse for mobile
+    const navToggler = document.querySelector('.navbar-toggler');
+    const navCollapse = document.querySelector('.navbar-collapse');
+    
+    if (navToggler && navCollapse) {
+        navToggler.addEventListener('click', function() {
+            navCollapse.classList.toggle('show');
+        });
+        
+        navCollapse.addEventListener('click', function(e) {
+            if (e.target.classList.contains('nav-link') || e.target.closest('[data-page-target]')) {
+                navCollapse.classList.remove('show');
+            }
+        });
+    }
+
+    // Handle initial page load
     const handleInitialLoad = () => {
         try {
             const initialPageId = window.location.hash.substring(3) || 'page-home';
             navigateToPage(initialPageId);
-            if (initialPageId === 'page-home') {
-                console.log("Página de inicio detectada. Intentando cargar datos iniciales...");
-                loadInitialData();
-            }
-            if (initialPageId === 'page-vacancies') {
-                console.log("Página de vacantes detectada. Intentando cargar todas las vacantes...");
-                loadAllVacancies();
-            }
         } catch (error) {
-            console.error("Ocurrió un error durante la carga inicial de la página:", error);
+            console.error('Error during initial page load:', error);
+            navigateToPage('page-home');
         }
     };
 
+    // Handle hash changes
     window.addEventListener('hashchange', handleInitialLoad);
+    
+    // Initial load
     handleInitialLoad();
+
+    console.log('Henmir Application Loaded Successfully!');
 });

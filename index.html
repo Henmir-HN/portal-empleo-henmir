@@ -1,118 +1,185 @@
 <!DOCTYPE html>
 <html lang="es-HN">
 <head>
-    <!-- ============== METADATOS Y CONFIGURACIÓN BÁSICA ============== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Título optimizado para SEO -->
     <title>Henmir | Conectando Talento con Oportunidades en Honduras</title>
-    
-    <!-- Descripción para motores de búsqueda (SEO) -->
     <meta name="description" content="Encuentra tu próximo empleo en Henmir. Explora vacantes, registra tu CV y consulta el estado de tus postulaciones. Conectamos el mejor talento con las empresas líderes de Honduras.">
     
-    <!-- ============== LIBRERÍAS DE ESTILOS (CSS) ============== -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Vinculos a CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tu archivo de estilos personalizados -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-    <!-- ================================================================== -->
-    <!-- ======================= BARRA DE NAVEGACIÓN ====================== -->
-    <!-- ================================================================== -->
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top" id="main-navbar">
         <div class="container">
-            <a class="navbar-brand fs-4" href="#!/page-home" data-page-target="page-home">
+            <a class="navbar-brand" href="#" data-page-target="page-home">
                 <i class="bi bi-briefcase-fill me-2"></i>Henmir
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link active" href="#!/page-home" data-page-target="page-home">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#!/page-vacancies" data-page-target="page-vacancies">Ver Vacantes</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#!/page-posts" data-page-target="page-posts">Noticias</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#!/page-register" data-page-target="page-register">Registrar CV</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" data-page-target="page-home">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page-target="page-vacancies">Vacantes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page-target="page-posts">Noticias</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page-target="page-about">Nosotros</a>
+                    </li>
                 </ul>
                 
-                <a href="#!/page-status" class="btn btn-primary" data-page-target="page-status">
-                    <i class="bi bi-person-check-fill me-2"></i>Consultar Postulaciones
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-outline-primary" data-page-target="page-register">
+                        <i class="bi bi-person-plus me-1"></i>Registrarme
+                    </a>
+                    <a href="#" class="btn btn-primary" data-page-target="page-status">
+                        <i class="bi bi-search me-1"></i>Mi Estado
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- ================================================================== -->
-    <!-- ===================== CONTENEDOR PRINCIPAL DE PÁGINAS ============ -->
-    <!-- ================================================================== -->
+    <!-- Main Content -->
     <main id="app-container">
-
-        <!-- ======================= PÁGINA: INICIO ======================= -->
+        <!-- Home Page -->
         <div id="page-home" class="page active">
+            <!-- Hero Section -->
             <section class="hero-section">
-                 <div class="container">
-                    <div class="row align-items-center g-5">
-                        <div class="col-lg-6">
-                            <h1 class="display-3">Tu futuro profesional<br>comienza <span class="text-primary">aquí.</span></h1>
-                            <p class="lead my-4">Somos el nexo entre el talento excepcional de Honduras y las empresas que lideran el mañana. Encuentra tu próxima gran oportunidad con nosotros.</p>
-                            <a href="#!/page-vacancies" class="btn btn-primary btn-lg" data-page-target="page-vacancies">Explorar Vacantes</a>
-                            <a href="#!/page-register" class="btn btn-outline-secondary btn-lg ms-2" data-page-target="page-register">Registra tu Hoja de Vida</a>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="hero-image-wrapper">
-                                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop" class="img-fluid hero-image" alt="Equipo de profesionales colaborando en una oficina moderna">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-lg-6 hero-content slide-in-left">
+                            <h1 class="hero-title">
+                                Tu futuro profesional comienza
+                                <span style="color: var(--accent);">aquí</span>
+                            </h1>
+                            <p class="hero-subtitle">
+                                Conectamos el mejor talento de Honduras con las empresas que están construyendo el futuro. 
+                                Descubre oportunidades que se alinean con tus aspiraciones profesionales.
+                            </p>
+                            <div class="d-flex gap-3 flex-wrap">
+                                <a href="#" class="btn btn-accent btn-lg" data-page-target="page-vacancies">
+                                    <i class="bi bi-search me-2"></i>Explorar Vacantes
+                                </a>
+                                <a href="#" class="btn btn-outline-primary btn-lg" data-page-target="page-register">
+                                    <i class="bi bi-upload me-2"></i>Subir CV
+                                </a>
                             </div>
+                        </div>
+                        <div class="col-lg-6 slide-in-right">
+                            <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop" 
+                                 class="img-fluid hero-image" 
+                                 alt="Profesionales colaborando">
                         </div>
                     </div>
                 </div>
             </section>
-            
-            <section class="py-5 bg-white">
+
+            <!-- Featured Vacancies -->
+            <section class="section-padding">
                 <div class="container">
-                    <h2 class="section-title text-center">Vacantes Destacadas</h2>
+                    <h2 class="section-title">Oportunidades Destacadas</h2>
                     <div class="row g-4" id="featured-vacancies-container">
-                        <div class="col-12 text-center p-5">
-                            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                                <span class="visually-hidden">Cargando vacantes...</span>
-                            </div>
+                        <!-- Loading skeleton -->
+                        <div class="col-12 text-center py-5">
+                            <div class="spinner-custom mx-auto"></div>
+                            <p class="mt-3 text-muted">Cargando oportunidades...</p>
                         </div>
                     </div>
                     <div class="text-center mt-5">
-                        <a href="#!/page-vacancies" class="btn btn-accent btn-lg" data-page-target="page-vacancies">Ver Todas las Vacantes</a>
+                        <a href="#" class="btn btn-primary btn-lg" data-page-target="page-vacancies">
+                            Ver Todas las Vacantes
+                            <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
                     </div>
                 </div>
             </section>
 
-            <section class="py-5">
+            <!-- Featured Posts -->
+            <section class="section-padding bg-white">
                 <div class="container">
-                    <h2 class="section-title text-center">Consejos para tu Carrera</h2>
+                    <h2 class="section-title">Consejos para tu Carrera</h2>
                     <div class="row g-4" id="featured-posts-container">
-                        <div class="col-12 text-center p-5">
-                            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                                <span class="visually-hidden">Cargando noticias...</span>
-                            </div>
-                        </div>
+                        <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
             </section>
         </div>
 
-        <!-- ======================= PÁGINA: VACANTES ======================= -->
+        <!-- Vacancies Page -->
         <div id="page-vacancies" class="page">
-            <section class="py-5">
+            <section class="section-padding">
                 <div class="container">
-                    <h1 class="section-title text-center">Todas las Vacantes</h1>
-                    <div class="row g-4" id="all-vacancies-container">
-                        <div class="col-12 text-center p-5">
-                            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                                <span class="visually-hidden">Cargando vacantes...</span>
+                    <div class="row">
+                        <div class="col-lg-3 mb-4">
+                            <!-- Filters -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3">
+                                        <i class="bi bi-funnel me-2"></i>Filtros
+                                    </h5>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Ubicación</label>
+                                        <select class="form-control" id="location-filter">
+                                            <option value="">Todas las ciudades</option>
+                                            <option value="Tegucigalpa">Tegucigalpa</option>
+                                            <option value="San Pedro Sula">San Pedro Sula</option>
+                                            <option value="La Ceiba">La Ceiba</option>
+                                            <option value="Choluteca">Choluteca</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Área</label>
+                                        <select class="form-control" id="area-filter">
+                                            <option value="">Todas las áreas</option>
+                                            <option value="Tecnología">Tecnología</option>
+                                            <option value="Administración">Administración</option>
+                                            <option value="Ventas">Ventas</option>
+                                            <option value="Marketing">Marketing</option>
+                                            <option value="Recursos Humanos">Recursos Humanos</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button class="btn btn-primary w-100" onclick="applyFilters()">
+                                        <i class="bi bi-search me-2"></i>Aplicar Filtros
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-9">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h1 class="h2 mb-0">Todas las Vacantes</h1>
+                                <div class="badge badge-custom" id="vacancy-count">
+                                    Cargando...
+                                </div>
+                            </div>
+                            
+                            <div class="row g-4" id="all-vacancies-container">
+                                <!-- Loading skeleton -->
+                                <div class="col-12 text-center py-5">
+                                    <div class="spinner-custom mx-auto"></div>
+                                    <p class="mt-3 text-muted">Cargando vacantes...</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -120,29 +187,266 @@
             </section>
         </div>
 
-        <!-- ======================= PÁGINA: NOTICIAS ======================= -->
+        <!-- Posts Page -->
         <div id="page-posts" class="page">
-            <section class="py-5">
+            <section class="section-padding">
                 <div class="container">
-                    <h1 class="section-title text-center">Noticias y Consejos</h1>
-                    <div class="row g-4">
-                        <div class="col-12 text-center p-5">
-                            <p class="lead text-secondary">Contenido de noticias próximamente...</p>
+                    <h1 class="section-title">Noticias y Consejos</h1>
+                    <div class="row g-4" id="all-posts-container">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- About Page -->
+        <div id="page-about" class="page">
+            <section class="section-padding">
+                <div class="container">
+                    <div class="row align-items-center mb-5">
+                        <div class="col-lg-6">
+                            <h1 class="section-title text-start">Sobre Henmir</h1>
+                            <h3 class="mb-4" style="color: var(--primary);">Nuestra Misión</h3>
+                            <p class="lead">
+                                Transformar el mercado laboral hondureño conectando talento excepcional con oportunidades 
+                                que impulsan el crecimiento personal y profesional, contribuyendo al desarrollo económico 
+                                sostenible de nuestro país.
+                            </p>
+                            <p>
+                                En Henmir, creemos que cada persona tiene un talento único que puede contribuir al éxito 
+                                de las organizaciones. Nuestro compromiso es facilitar estas conexiones de manera 
+                                transparente, eficiente y humana.
+                            </p>
+                        </div>
+                        <div class="col-lg-6">
+                            <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=800&auto=format&fit=crop" 
+                                 class="img-fluid rounded-4 shadow-lg" 
+                                 alt="Equipo Henmir">
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="job-icon mx-auto mb-3">
+                                    <i class="bi bi-target"></i>
+                                </div>
+                                <h4>Visión</h4>
+                                <p>Ser la plataforma líder de empleo en Honduras, reconocida por nuestro compromiso con la excelencia y la innovación.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="job-icon mx-auto mb-3">
+                                    <i class="bi bi-heart"></i>
+                                </div>
+                                <h4>Valores</h4>
+                                <p>Integridad, transparencia, compromiso con la excelencia y respeto por cada persona en su búsqueda profesional.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="job-icon mx-auto mb-3">
+                                    <i class="bi bi-people"></i>
+                                </div>
+                                <h4>Comunidad</h4>
+                                <p>Construimos una comunidad donde profesionales y empresas crecen juntos hacia un futuro próspero.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
         </div>
 
-        <!-- ======================= PÁGINA: REGISTRO ======================= -->
+        <!-- Register Page -->
         <div id="page-register" class="page">
-            <section class="py-5">
+            <section class="section-padding">
                 <div class="container">
-                    <h1 class="section-title text-center">Registra tu CV</h1>
                     <div class="row justify-content-center">
                         <div class="col-lg-8">
-                            <div class="card p-4">
-                                <p class="lead text-center text-secondary">Formulario de registro próximamente...</p>
+                            <div class="card shadow-lg">
+                                <div class="card-body p-5">
+                                    <div class="text-center mb-4">
+                                        <h2 class="section-title">Únete a Henmir</h2>
+                                        <p class="text-muted">Registra tu información y comienza tu journey profesional</p>
+                                    </div>
+                                    
+                                    <form id="registration-form" class="needs-validation" novalidate>
+                                        <!-- Terms Agreement -->
+                                        <div class="alert alert-info mb-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="" id="terms-agreement" required>
+                                                <label class="form-check-label" for="terms-agreement">
+                                                    <strong>Acepto el contrato de servicios de reclutamiento</strong>
+                                                </label>
+                                                <div class="invalid-feedback">
+                                                    Debes aceptar los términos para continuar.
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">
+                                                Al marcar esta casilla, aceptas nuestros términos de servicio y autorizas el cobro del 50% del primer salario en caso de contratación exitosa.
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" class="text-primary">Leer términos completos</a>
+                                            </small>
+                                        </div>
+
+                                        <div class="row g-3">
+                                            <!-- Personal Information -->
+                                            <div class="col-12">
+                                                <h5 class="mb-3">
+                                                    <i class="bi bi-person-circle me-2"></i>Información Personal
+                                                </h5>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label for="fullName" class="form-label">Nombre Completo *</label>
+                                                <input type="text" class="form-control" id="fullName" required>
+                                                <div class="invalid-feedback">
+                                                    Por favor ingresa tu nombre completo.
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label for="identityNumber" class="form-label">Número de Identidad *</label>
+                                                <input type="text" class="form-control" id="identityNumber" placeholder="Sin guiones" required>
+                                                <div class="invalid-feedback">
+                                                    Ingresa tu número de identidad sin guiones.
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label for="phone" class="form-label">Número de Teléfono *</label>
+                                                <input type="tel" class="form-control" id="phone" placeholder="+504 0000-0000" required>
+                                                <div class="invalid-feedback">
+                                                    Ingresa un número de teléfono válido.
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label for="city" class="form-label">Ciudad *</label>
+                                                <select class="form-control" id="city" required>
+                                                    <option value="">Selecciona tu ciudad</option>
+                                                    <option value="Tegucigalpa">Tegucigalpa</option>
+                                                    <option value="San Pedro Sula">San Pedro Sula</option>
+                                                    <option value="La Ceiba">La Ceiba</option>
+                                                    <option value="Choluteca">Choluteca</option>
+                                                    <option value="El Progreso">El Progreso</option>
+                                                    <option value="Comayagua">Comayagua</option>
+                                                    <option value="Puerto Cortés">Puerto Cortés</option>
+                                                    <option value="Danlí">Danlí</option>
+                                                    <option value="Siguatepeque">Siguatepeque</option>
+                                                    <option value="Juticalpa">Juticalpa</option>
+                                                    <option value="Otra">Otra</option>
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Selecciona tu ciudad.
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label for="email" class="form-label">Correo Electrónico *</label>
+                                                <input type="email" class="form-control" id="email" required>
+                                                <div class="invalid-feedback">
+                                                    Ingresa un correo electrónico válido.
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label for="education" class="form-label">Grado Académico *</label>
+                                                <select class="form-control" id="education" required>
+                                                    <option value="">Selecciona tu nivel educativo</option>
+                                                    <option value="Primaria">Educación Primaria</option>
+                                                    <option value="Secundaria">Educación Secundaria</option>
+                                                    <option value="Técnico">Técnico/Tecnólogo</option>
+                                                    <option value="Universitario">Universitario</option>
+                                                    <option value="Postgrado">Postgrado</option>
+                                                    <option value="Maestría">Maestría</option>
+                                                    <option value="Doctorado">Doctorado</option>
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Selecciona tu nivel educativo.
+                                                </div>
+                                            </div>
+
+                                            <!-- Work Preferences -->
+                                            <div class="col-12 mt-4">
+                                                <h5 class="mb-3">
+                                                    <i class="bi bi-briefcase me-2"></i>Preferencias Laborales
+                                                </h5>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label class="form-label">¿Cuentas con transporte propio? *</label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="transport" id="transportYes" value="Si" required>
+                                                    <label class="form-check-label" for="transportYes">Sí</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="transport" id="transportNo" value="No" required>
+                                                    <label class="form-check-label" for="transportNo">No</label>
+                                                </div>
+                                                <div class="invalid-feedback">
+                                                    Selecciona una opción.
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label class="form-label">¿Disponibilidad para turnos rotativos? *</label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="shifts" id="shiftsYes" value="Si" required>
+                                                    <label class="form-check-label" for="shiftsYes">Sí</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="shifts" id="shiftsNo" value="No" required>
+                                                    <label class="form-check-label" for="shiftsNo">No</label>
+                                                </div>
+                                                <div class="invalid-feedback">
+                                                    Selecciona una opción.
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-12">
+                                                <label for="experience" class="form-label">Experiencia Laboral *</label>
+                                                <textarea class="form-control" id="experience" rows="4" 
+                                                    placeholder="Describe detalladamente tu experiencia laboral, incluyendo empresas donde has trabajado, cargos desempeñados, años de experiencia y principales logros..." required></textarea>
+                                                <div class="form-text">Esta información es clave para encontrar las mejores oportunidades para ti.</div>
+                                                <div class="invalid-feedback">
+                                                    Describe tu experiencia laboral.
+                                                </div>
+                                            </div>
+
+                                            <!-- File Uploads -->
+                                            <div class="col-12 mt-4">
+                                                <h5 class="mb-3">
+                                                    <i class="bi bi-file-earmark-text me-2"></i>Documentos
+                                                </h5>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label for="cv" class="form-label">Curriculum Vitae *</label>
+                                                <input type="file" class="form-control" id="cv" accept=".pdf,.doc,.docx" required>
+                                                <div class="form-text">Formatos aceptados: PDF, DOC, DOCX (máx. 5MB)</div>
+                                                <div class="invalid-feedback">
+                                                    Sube tu CV en formato PDF o Word.
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label for="identity" class="form-label">Fotos de Identidad *</label>
+                                                <input type="file" class="form-control" id="identity" accept="image/*" multiple required>
+                                                <div class="form-text">Sube foto del anverso y reverso de tu tarjeta de identidad</div>
+                                                <div class="invalid-feedback">
+                                                    Sube las fotos de tu identidad.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-center mt-4">
+                                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                                <i class="bi bi-check-circle me-2"></i>Registrarme
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -150,84 +454,428 @@
             </section>
         </div>
 
-        <!-- ======================= PÁGINA: CONSULTAR STATUS ======================= -->
+        <!-- Status Page -->
         <div id="page-status" class="page">
-            <section class="py-5">
+            <section class="section-padding">
                 <div class="container">
-                    <h1 class="section-title text-center">Consultar Estado de Postulaciones</h1>
                     <div class="row justify-content-center">
                         <div class="col-lg-6">
-                            <div class="card p-4">
-                                <form id="status-check-form">
-                                    <div class="mb-3">
-                                        <label for="status-identity" class="form-label">Número de Identidad</label>
-                                        <input type="text" class="form-control" id="status-identity" placeholder="Ingresa tu número de identidad" required>
+                            <div class="card shadow-lg">
+                                <div class="card-body p-4">
+                                    <div class="text-center mb-4">
+                                        <div class="job-icon mx-auto mb-3">
+                                            <i class="bi bi-search"></i>
+                                        </div>
+                                        <h2>Consultar Estado</h2>
+                                        <p class="text-muted">Ingresa tu número de identidad para ver el estado de tus postulaciones</p>
                                     </div>
-                                    <button type="submit" class="btn btn-primary w-100">Consultar Estado</button>
-                                </form>
+                                    
+                                    <form id="status-check-form">
+                                        <div class="mb-3">
+                                            <label for="status-identity" class="form-label">Número de Identidad</label>
+                                            <input type="text" 
+                                                   class="form-control form-control-lg" 
+                                                   id="status-identity" 
+                                                   placeholder="Ingresa tu número sin guiones" 
+                                                   required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                            <i class="bi bi-search me-2"></i>Consultar Estado
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
-                            <div id="status-results-container"></div>
+                            
+                            <div id="status-results-container" class="mt-4"></div>
                         </div>
                     </div>
                 </div>
             </section>
         </div>
-    </main>
-    
-    <footer class="pt-5 pb-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4">
-                    <h5 class="footer-title">Henmir</h5>
-                    <p>Conectando talento con oportunidades en Honduras.</p>
+                <!-- Contact Page -->
+        <div id="page-contact" class="page">
+            <section class="section-padding">
+                <div class="container">
+                    <h1 class="section-title">Contacto</h1>
+                    <div class="row g-5">
+                        <div class="col-lg-6">
+                            <div class="card shadow-lg">
+                                <div class="card-body p-5">
+                                    <h4 class="mb-4">Envíanos un Mensaje</h4>
+                                    <form id="contact-form">
+                                        <div class="mb-3">
+                                            <label for="contact-name" class="form-label">Nombre Completo</label>
+                                            <input type="text" class="form-control" id="contact-name" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="contact-email" class="form-label">Correo Electrónico</label>
+                                            <input type="email" class="form-control" id="contact-email" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="contact-subject" class="form-label">Asunto</label>
+                                            <input type="text" class="form-control" id="contact-subject" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="contact-message" class="form-label">Mensaje</label>
+                                            <textarea class="form-control" id="contact-message" rows="5" required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                            <i class="bi bi-send me-2"></i>Enviar Mensaje
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <h4 class="mb-4">Información de Contacto</h4>
+                            <div class="d-flex mb-3">
+                                <div class="job-icon me-3">
+                                    <i class="bi bi-geo-alt"></i>
+                                </div>
+                                <div>
+                                    <h5>Nuestra Ubicación</h5>
+                                    <p class="text-muted">Honduras, Centroamérica.<br>Operamos de forma digital para todo el país.</p>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <div class="job-icon me-3">
+                                    <i class="bi bi-envelope"></i>
+                                </div>
+                                <div>
+                                    <h5>Correo Electrónico</h5>
+                                    <p class="text-muted">
+                                        <a href="mailto:info@henmir.com">info@henmir.com</a>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <div class="job-icon me-3">
+                                    <i class="bi bi-whatsapp"></i>
+                                </div>
+                                <div>
+                                    <h5>WhatsApp</h5>
+                                    <p class="text-muted">
+                                        <a href="https://wa.me/50400000000">+504 0000-0000</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </section>
+        </div>
+
+        <!-- FAQ Page -->
+        <div id="page-faq" class="page">
+            <section class="section-padding">
+                <div class="container">
+                    <h1 class="section-title">Preguntas Frecuentes</h1>
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="accordion" id="faqAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingOne">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                            ¿Tiene algún costo registrarme o aplicar a una vacante?
+                                        </button>
+                                    </h2>
+                                    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            <strong>No, el registro es completamente gratuito.</strong> Nuestro modelo es de "éxito compartido". Solo realizas una inversión equivalente al 50% de tu primer salario si, y solo si, te conseguimos un empleo a través de nuestra gestión. No hay ningún riesgo para ti.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingTwo">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                            ¿Cómo protegen mi información personal?
+                                        </button>
+                                    </h2>
+                                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            La seguridad de tus datos es nuestra máxima prioridad. Tu información es 100% confidencial y solo se comparte con una empresa cuando has sido postulado a una vacante específica en su proceso de selección.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingThree">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                            ¿Qué pasa después de que me registro?
+                                        </button>
+                                    </h2>
+                                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            Una vez que te registras, tu perfil entra en nuestra base de datos de talento. Nuestro equipo de reclutadores revisará tu perfil y te contactará proactivamente por WhatsApp cuando surja una oportunidad que se alinee con tu experiencia y habilidades.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingFour">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                                            Tengo poca o ninguna experiencia, ¿aún puedo aplicar?
+                                        </button>
+                                    </h2>
+                                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            ¡Claro que sí! Muchas de nuestras vacantes están diseñadas para personas que buscan su primer empleo o tienen experiencia limitada. Lo más importante es tu actitud y ganas de aprender. Al registrarte, nos aseguramos de buscar esas oportunidades que se ajusten a tu perfil.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Privacy Policy Page -->
+        <div id="page-privacy" class="page">
+            <section class="section-padding">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <h1 class="section-title text-start mb-4">Política de Privacidad</h1>
+                            <p class="text-muted">Última actualización: 17 de agosto de 2025</p>
+
+                            <h4 class="mt-5">1. Información que Recopilamos</h4>
+                            <p>Recopilamos información que nos proporcionas directamente al registrarte en nuestra plataforma, incluyendo, entre otros: tu nombre completo, número de identidad, número de teléfono, correo electrónico, ciudad, grado académico, experiencia laboral y documentos como tu CV y fotos de identidad.</p>
+
+                            <h4 class="mt-4">2. Uso de la Información</h4>
+                            <p>La información recopilada se utiliza exclusivamente para los siguientes propósitos:</p>
+                            <ul>
+                                <li>Evaluar tu perfil profesional para oportunidades de empleo.</li>
+                                <li>Contactarte para informarte sobre vacantes que coincidan con tu perfil.</li>
+                                <li>Facilitar el proceso de postulación con empresas empleadoras.</li>
+                                <li>Coordinar entrevistas y dar seguimiento a tus procesos de selección.</li>
+                                <li>Comunicarnos contigo para fines relacionados con nuestros servicios de reclutamiento.</li>
+                            </ul>
+
+                            <h4 class="mt-4">3. Cómo Compartimos tu Información</h4>
+                            <p>Tu información es confidencial. Solo compartimos tus datos personales y profesionales con empresas empleadoras potenciales en el contexto de un proceso de selección para una vacante específica. No vendemos ni alquilamos tu información a terceros para fines de marketing.</p>
+
+                            <h4 class="mt-4">4. Seguridad de los Datos</h4>
+                            <p>Implementamos medidas de seguridad técnicas y organizativas para proteger tu información contra el acceso no autorizado, la alteración, la divulgación o la destrucción. Sin embargo, ningún sistema de transmisión por internet o de almacenamiento electrónico es 100% seguro.</p>
+
+                            <h4 class="mt-4">5. Tus Derechos</h4>
+                            <p>Tienes derecho a acceder, rectificar o eliminar tu información personal de nuestra base de datos. Para ejercer estos derechos, puedes contactarnos a través de los canales proporcionados en nuestra página de contacto.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+
+
+    </main>
+
+    <!-- Terms Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termsModalLabel">
+                        <i class="bi bi-file-text me-2"></i>Contrato de Servicios de Reclutamiento
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6 class="text-primary">CONTRATO DE SERVICIOS DE RECLUTAMIENTO</h6>
+                        <p><strong>Entre:</strong> El Afiliado, cuyo nombre y documento de identidad se registra en este formulario, y cuyo domicilio queda ubicado en el lugar que describe en este mismo documento.</p>
+                        <p><strong>Y:</strong> Agencia de empleos HENMIR, con domicilio en Honduras y representada por Keneth Xavier Castellanos, en adelante "La Agencia".</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary">PRIMERA - OBJETO DEL CONTRATO</h6>
+                        <p>El objeto del presente contrato es la prestación de servicios de reclutamiento por parte de La Agencia para la búsqueda, selección y facilitación de oportunidades de empleo para El Afiliado, de acuerdo con el perfil profesional y las necesidades expresadas.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary">SEGUNDA - OBLIGACIONES DE LA AGENCIA</h6>
+                        <ul>
+                            <li>Realizar las gestiones necesarias para la búsqueda de empleo para El Afiliado.</li>
+                            <li>Notificar sobre vacantes disponibles que coincidan con el perfil profesional.</li>
+                            <li>Facilitar el contacto con empleadores potenciales y coordinar entrevistas.</li>
+                            <li>Brindar asesoramiento durante el proceso de selección.</li>
+                            <li>Mantener la confidencialidad de la información personal y profesional del Afiliado.</li>
+                        </ul>
+                        <p><em>Nota: La Agencia no garantiza contratación, pero se compromete a ofrecer todas las oportunidades disponibles acordes al perfil profesional.</em></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary">TERCERA - OBLIGACIONES DEL AFILIADO</h6>
+                        <ul>
+                            <li>Proporcionar información verídica y actualizada sobre experiencia laboral, formación académica y antecedentes pertinentes.</li>
+                            <li>Asistir puntualmente a las entrevistas programadas por La Agencia.</li>
+                            <li>Seguir los procesos establecidos por los potenciales empleadores.</li>
+                            <li>Comunicar cualquier cambio en su situación laboral o disponibilidad.</li>
+                            <li>Mantener un comportamiento profesional durante todo el proceso.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary">CUARTA - HONORARIOS POR SERVICIOS</h6>
+                        <p>En caso de que El Afiliado sea contratado exitosamente por alguno de los empleadores presentados por La Agencia, El Afiliado se obliga a pagar una comisión equivalente al <strong>50% del salario bruto correspondiente al primer mes de trabajo</strong>.</p>
+                        <p>Este pago deberá realizarse dentro de un plazo de 30 días calendario contados a partir del primer día efectivo de trabajo.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary">QUINTA - CONDICIONES DE PAGO</h6>
+                        <ul>
+                            <li>El pago se realizará únicamente en caso de contratación exitosa.</li>
+                            <li>La comisión se calcula sobre el salario bruto antes de deducciones.</li>
+                            <li>En caso de renuncia voluntaria antes de completar el primer mes, la obligación de pago permanece.</li>
+                            <li>Si el empleador rescinde el contrato por causas no atribuibles al Afiliado durante el primer mes, la comisión será proporcional a los días trabajados.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary">SEXTA - PROTECCIÓN DE DATOS</h6>
+                        <p>La Agencia se compromete a proteger la información personal del Afiliado conforme a las leyes de protección de datos vigentes. La información será utilizada exclusivamente para fines de reclutamiento y no será compartida con terceros sin consentimiento expreso, excepto con potenciales empleadores durante el proceso de selección.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary">SÉPTIMA - DURACIÓN Y TERMINACIÓN</h6>
+                        <p>El presente contrato tiene una duración de 12 meses renovables automáticamente, iniciando desde la aceptación del mismo. Puede darse por terminado por cualquiera de las partes mediante notificación escrita con 30 días de anticipación, sin perjuicio de las obligaciones ya adquiridas.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary">OCTAVA - RESOLUCIÓN DE CONFLICTOS</h6>
+                        <p>Cualquier controversia derivada de este contrato será resuelta mediante mediación. En caso de no llegar a un acuerdo, se someterá a la jurisdicción de los tribunales competentes de Honduras, aplicando la legislación laboral y civil vigente.</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary">NOVENA - DISPOSICIONES GENERALES</h6>
+                        <ul>
+                            <li>Este contrato constituye el acuerdo completo entre las partes.</li>
+                            <li>Cualquier modificación debe ser por escrito y aceptada por ambas partes.</li>
+                            <li>La nulidad de alguna cláusula no afectará la validez del resto del contrato.</li>
+                            <li>El Afiliado declara haber leído, entendido y aceptado todos los términos.</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-exclamation-triangle me-2"></i>Importante:</h6>
+                        <p class="mb-0">Al registrarte y marcar la casilla de aceptación, confirmas que has leído, entendido y aceptas todos los términos y condiciones de este contrato de servicios de reclutamiento.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="acceptTerms()">
+                        <i class="bi bi-check-circle me-2"></i>Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Details Modal -->
+    <div class="modal fade" id="jobModal" tabindex="-1" aria-labelledby="jobModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="jobModalLabel">Detalles de la Vacante</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="jobModalBody">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="applyToJob()">
+                        <i class="bi bi-send me-2"></i>Aplicar a esta Vacante
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row g-4">
                 <div class="col-lg-4">
-                    <h6 class="footer-title">Enlaces</h6>
+                    <h5 class="footer-title">
+                        <i class="bi bi-briefcase-fill me-2"></i>Henmir
+                    </h5>
+                    <p class="mb-3">Conectando talento excepcional con oportunidades que transforman carreras y empresas en Honduras.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-decoration-none">
+                            <i class="bi bi-facebook fs-5"></i>
+                        </a>
+                        <a href="#" class="text-decoration-none">
+                            <i class="bi bi-linkedin fs-5"></i>
+                        </a>
+                        <a href="#" class="text-decoration-none">
+                            <i class="bi bi-instagram fs-5"></i>
+                        </a>
+                        <a href="#" class="text-decoration-none">
+                            <i class="bi bi-whatsapp fs-5"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <h6 class="footer-title">Navegación</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#!/page-home" data-page-target="page-home">Inicio</a></li>
-                        <li><a href="#!/page-vacancies" data-page-target="page-vacancies">Vacantes</a></li>
-                        <li><a href="#!/page-status" data-page-target="page-status">Consultar Estado</a></li>
+                        <li><a href="#" data-page-target="page-home">Inicio</a></li>
+                        <li><a href="#" data-page-target="page-vacancies">Vacantes</a></li>
+                        <li><a href="#" data-page-target="page-posts">Noticias</a></li>
+                        <li><a href="#" data-page-target="page-about">Nosotros</a></li>
                     </ul>
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-2">
+                    <h6 class="footer-title">Servicios</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" data-page-target="page-register">Registro de CV</a></li>
+                        <li><a href="#" data-page-target="page-status">Consultar Estado</a></li>
+                        <li><a href="#">Asesoría Profesional</a></li>
+                        <li><a href="#">Servicios Empresariales</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
+                    <h6 class="footer-title">Soporte</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Términos</a></li>
+                        <li><a href="#" data-page-target="page-privacy">Política de Privacidad</a></li>
+                        <li><a href="#" data-page-target="page-faq">Preguntas Frecuentes</a></li>
+                        <li><a href="#" data-page-target="page-contact">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
                     <h6 class="footer-title">Contacto</h6>
-                    <p>Email: info@henmir.com<br>
-                    Teléfono: +504 0000-0000</p>
+                    <p class="mb-1">
+                        <i class="bi bi-envelope me-2"></i>
+                        <a href="mailto:agencia.henmir@hmail.com">agencia.henmir@gmail.com</a>
+                    </p>
+                    <p class="mb-1">
+                        <i class="bi bi-whatsapp me-2"></i>
+                        <a href="https://wa.me/50499221198">+504 9922-1198</a>
+                    </p>
+                    <p class="mb-0">
+                        <i class="bi bi-geo-alt me-2"></i>
+                        <a href="#" data-page-target="page-contact">Honduras, Centroamérica</a>
+                    </p>
+                </div>
+            <hr class="my-4 opacity-25">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 opacity-75">© 2024 Henmir. Todos los derechos reservados.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="opacity-75">
+                        Hecho con <i class="bi bi-heart-fill text-danger"></i> para el talento hondureño
+                    </small>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- ================================================================== -->
-    <!-- ===================== SCRIPTS DE JAVASCRIPT (CORREGIDOS) ========= -->
-    <!-- ================================================================== -->
-    
-    <!-- SOLUCIÓN: Solo cargar Popper y el Collapse específico, no el bundle completo -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    
-    <!-- Solo el componente Collapse sin modal.js problemático -->
-    <script>
-        // Bootstrap Collapse manual (sin modal.js)
-        document.addEventListener('DOMContentLoaded', function() {
-            const navToggler = document.querySelector('.navbar-toggler');
-            const navCollapse = document.querySelector('.navbar-collapse');
-            
-            if (navToggler && navCollapse) {
-                navToggler.addEventListener('click', function() {
-                    navCollapse.classList.toggle('show');
-                });
-                
-                // Cerrar menú al hacer clic en un enlace
-                navCollapse.addEventListener('click', function(e) {
-                    if (e.target.classList.contains('nav-link')) {
-                        navCollapse.classList.remove('show');
-                    }
-                });
-            }
-        });
-    </script>
-
-    <!-- ARCHIVO JAVASCRIPT PRINCIPAL (NOMBRE CORREGIDO) -->
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
