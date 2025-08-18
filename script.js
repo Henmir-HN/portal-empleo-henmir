@@ -52,43 +52,43 @@ function showToast(message, type = 'info') {
 }
 
 // API Functions
+// REEMPLAZA LA FUNCIÓN apiCall COMPLETA CON ESTA VERSIÓN CORREGIDA
 async function apiCall(endpoint, options = {}) {
     try {
         console.log(`API Call: ${API_BASE_URL}${endpoint}`);
         
-        const defaultOptions = {
-            headers: {} // Inicia con headers vacíos
-        };
+        const finalOptions = { ...options };
 
         // Lógica clave: Solo establece Content-Type si el body NO es FormData.
-        // El navegador se encarga de establecer el Content-Type correcto para subida de archivos.
-        if (!(options.body instanceof FormData)) {
-            defaultOptions.headers['Content-Type'] = 'application/json';
-            defaultOptions.headers['Accept'] = 'application/json';
+        if (!(finalOptions.body instanceof FormData)) {
+            finalOptions.headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...finalOptions.headers
+            };
         }
-
-        const finalOptions = {
-            ...defaultOptions,
-            ...options,
-            headers: {
-                ...defaultOptions.headers,
-                ...(options.headers || {})
-            }
-        };
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, finalOptions);
-        
-        // Intenta parsear la respuesta como JSON, maneja el caso de que no haya contenido
-        const textResponse = await response.text();
-        const data = textResponse ? JSON.parse(textResponse) : {};
-        
+
+        // Primero, verificamos si la respuesta es exitosa a nivel de HTTP
         if (!response.ok) {
-            throw new Error(data.error || `Error del servidor: ${response.status}`);
+            // Intentamos obtener un error específico del cuerpo de la respuesta
+            let errorMsg = `Error del servidor: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.error || errorMsg;
+            } catch (e) {
+                // El cuerpo del error no era JSON, nos quedamos con el status
+            }
+            throw new Error(errorMsg);
         }
 
-        // Asumimos que la respuesta siempre tiene una estructura { success: boolean, ... }
+        // Si la respuesta es exitosa (ej. 200 OK), procedemos a parsear el JSON
+        const data = await response.json();
+        
+        // Verificamos el indicador de éxito de nuestra lógica de negocio
         if (data.success === false) {
-             throw new Error(data.error || `La API reportó un fallo.`);
+            throw new Error(data.error || `La API reportó un fallo.`);
         }
 
         return { success: true, data: data.data };
