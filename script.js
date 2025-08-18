@@ -5,7 +5,7 @@ console.log("app.js: El archivo se ha cargado y se está ejecutando.");
 
 // --- 1. CONFIGURACIÓN GLOBAL CORREGIDA ---
 // Mantener 'public-api' como está en tu Flask app
-const API_BASE_URL = 'https://HenmirApp.pythonanywhere.com/public-api';
+const API_BASE_URL = 'https://henmir.pythonanywhere.com/public-api';
 
 // Función para verificar la conexión con el servidor
 const testConnection = async () => {
