@@ -1,5 +1,5 @@
 // Global Configuration
-const API_BASE_URL = 'https://crm-henmir.trycloudflare.com/public-api';
+const API_BASE_URL = 'https://crm-henmir.trycloudflare.com/api';
 let appData = {
     vacancies: [],
     posts: [],
