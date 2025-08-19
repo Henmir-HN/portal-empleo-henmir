@@ -660,7 +660,7 @@ async function handleFormSubmission(form) {
             message: document.getElementById('contact-message').value
         };
 
-        const result = await apiCall('/public-api/contact', {
+        const result = await apiCall('/contact', {
             method: 'POST',
             body: JSON.stringify(contactData)
         });
@@ -707,7 +707,7 @@ async function handleRegistrationForm(form) {
     }
 
     // --- ESTA ES LA IMPLEMENTACIÓN REAL, SIN SIMULACIÓN ---
-    const result = await apiCall('/public-api/register', {
+    const result = await apiCall('/register', {
         method: 'POST',
         body: formData // La función apiCall ahora sabe cómo manejar FormData
     });
