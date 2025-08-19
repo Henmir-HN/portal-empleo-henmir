@@ -1,6 +1,6 @@
 // Global Configuration
 //const API_BASE_URL = 'http://34.68.183.117.nip.io/public-api';
-const API_BASE_URL = 'https://34.68.183.117.sslip.io/public-api'
+const API_BASE_URL = 'https://34.68.183.117.sslip.io/public-api/vacancies'
 let appData = {
     vacancies: [],
     posts: [],
