@@ -451,14 +451,11 @@ function showJobDetails(vacancy) {
  * @param {string} title - El título que aparecerá en la cabecera del modal.
  * @param {string} content - El contenido HTML que se insertará en el cuerpo del modal.
  */
+// AÑADE ESTE BLOQUE DE 2 FUNCIONES COMPLETAS A TU SCRIPT.JS PÚBLICO
 function showModal(title, content) {
-    // Primero, nos aseguramos de que no haya un modal viejo abierto
     const oldModal = document.getElementById('genericModal');
-    if (oldModal) {
-        oldModal.remove();
-    }
+    if (oldModal) oldModal.remove();
 
-    // Creamos la estructura del modal con el estilo de Bootstrap
     const modalElement = document.createElement('div');
     modalElement.className = 'modal fade';
     modalElement.id = 'genericModal';
@@ -469,37 +466,23 @@ function showModal(title, content) {
                     <h5 class="modal-title">${title}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    ${content}
-                </div>
+                <div class="modal-body">${content}</div>
             </div>
         </div>
     `;
-
-    // Lo añadimos al cuerpo del documento y lo mostramos
     document.body.appendChild(modalElement);
     const bsModal = new bootstrap.Modal(modalElement);
     bsModal.show();
-
-    // Limpieza: eliminamos el elemento del modal del DOM cuando se oculta
-    modalElement.addEventListener('hidden.bs.modal', () => {
-        modalElement.remove();
-    });
+    modalElement.addEventListener('hidden.bs.modal', () => modalElement.remove());
 }
 
-/**
- * Cierra el modal genérico que hemos creado.
- */
 function closeModal() {
     const modalElement = document.getElementById('genericModal');
     if (modalElement) {
         const bsModal = bootstrap.Modal.getInstance(modalElement);
-        if (bsModal) {
-            bsModal.hide();
-        }
+        if (bsModal) bsModal.hide();
     }
 }
-
 /**
  * Función "orquestadora" que se llama al hacer clic en "Solicitar Postulación".
  * Decide qué hacer basándose en el estado de la sesión del candidato.
@@ -990,7 +973,8 @@ function checkLoginStatus() {
     }
 }
 
-async function requestApplication(vacancyId) {
+
+function requestApplication(vacancyId) {
     const identity = localStorage.getItem('candidateIdentity');
     if (!identity) {
         alert('Por favor, ingresa tu número de identidad primero para poder postular.');
@@ -1001,23 +985,38 @@ async function requestApplication(vacancyId) {
         return;
     }
 
-    try {
-        const response = await apiCall('/request-application', {
-             method: 'POST',
-             body: JSON.stringify({
-                identity_number: identity,
-                vacancy_id: vacancyId
-            })
-        });
+    // --- INICIO DE LA LÓGICA JSONP ---
 
-        if (response.success) {
-            // El mensaje de éxito ahora está dentro de response.data.message
-            alert(response.data.message); 
-        } else {
-            // El mensaje de error está en response.error
-            throw new Error(response.error);
-        }
-    } catch (error) {
-        alert('Error al enviar la solicitud: ' + error.message);
-    }
+    // 1. Define un nombre único para la función callback que manejará la respuesta
+    const callbackName = 'handleApplicationResponse';
+
+    // 2. Define la función callback en el scope global (window)
+    window[callbackName] = function(response) {
+        // Esta función será llamada por el script que devuelve el servidor
+        alert(response.message || response.error);
+
+        // Limpieza: elimina el script y la función callback global
+        delete window[callbackName];
+        document.body.removeChild(script);
+    };
+
+    // 3. Construye la URL del endpoint JSONP con los parámetros
+    const params = new URLSearchParams({
+        callback: callbackName,
+        identity_number: identity,
+        vacancy_id: vacancyId
+    });
+    const url = `${API_BASE_URL}/request-application-jsonp?${params.toString()}`;
+
+    // 4. Crea una etiqueta <script> y la añade al documento para hacer la petición
+    const script = document.createElement('script');
+    script.src = url;
+    document.body.appendChild(script);
+
+    // Manejo de errores de red (si el script no carga)
+    script.onerror = function() {
+        alert('Error de red. No se pudo conectar con el servidor para enviar la solicitud.');
+        delete window[callbackName];
+        document.body.removeChild(script);
+    };
 }
