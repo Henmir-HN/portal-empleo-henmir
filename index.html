@@ -56,19 +56,6 @@
             </div>
         </div>
     </nav>
-    <!-- AÑADE ESTE BLOQUE COMPLETO EN TU INDEX.HTML -->
-    <div class="container my-4">
-        <div class="card p-3 shadow-sm" id="session-manager">
-            <div id="welcome-message" style="display:none;" class="alert alert-success"></div>
-            <div id="login-form">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="identity-input" placeholder="Ingresa tu No. de Identidad para postular">
-                    <button class="btn btn-primary" onclick="loginCandidate()">Ingresar</button>
-                </div>
-            </div>
-            <button id="logout-button" class="btn btn-outline-secondary mt-2" onclick="logoutCandidate()" style="display:none;">Salir (cambiar de identidad)</button>
-        </div>
-    </div>
 
     <!-- Main Content -->
     <main id="app-container">
@@ -468,42 +455,40 @@
         </div>
 
         <!-- Status Page -->
+        <!-- REEMPLAZA EL CONTENIDO DE <div id="page-status" ...> CON ESTO -->
         <div id="page-status" class="page">
             <section class="section-padding">
                 <div class="container">
                     <div class="row justify-content-center">
-                        <div class="col-lg-6">
-                            <div class="card shadow-lg">
+                        <div class="col-lg-8">
+                            <!-- Formulario de Consulta/Login -->
+                            <div id="status-form-container" class="card shadow-lg mb-4">
                                 <div class="card-body p-4">
                                     <div class="text-center mb-4">
                                         <div class="job-icon mx-auto mb-3">
-                                            <i class="bi bi-search"></i>
+                                            <i class="bi bi-person-badge"></i>
                                         </div>
-                                        <h2>Consultar Estado</h2>
-                                        <p class="text-muted">Ingresa tu número de identidad para ver el estado de tus postulaciones</p>
+                                        <h2>Portal del Candidato</h2>
+                                        <p class="text-muted">Ingresa tu número de identidad para ver tu perfil y postular a vacantes.</p>
                                     </div>
-                                    
                                     <form id="status-check-form">
                                         <div class="mb-3">
-                                            <label for="status-identity" class="form-label">Número de Identidad</label>
-                                            <input type="text" 
-                                                   class="form-control form-control-lg" 
-                                                   id="status-identity" 
-                                                   placeholder="Ingresa tu número sin guiones" 
-                                                   required>
+                                            <input type="text" class="form-control form-control-lg" id="status-identity" placeholder="Ingresa tu número sin guiones" required>
                                         </div>
                                         <button type="submit" class="btn btn-primary w-100 btn-lg">
-                                            <i class="bi bi-search me-2"></i>Consultar Estado
+                                            <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar a mi Perfil
                                         </button>
                                     </form>
                                 </div>
                             </div>
-                            
-                            <div id="status-results-container" class="mt-4"></div>
+                    
+                            <!-- Contenedor para los resultados del perfil -->
+                            <div id="status-results-container" class="mt-4">
+                                <!-- El perfil del candidato se renderizará aquí -->
+                            </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
         </div>
                 <!-- Contact Page -->
         <div id="page-contact" class="page">

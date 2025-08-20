@@ -124,86 +124,22 @@ async function loadVacancies(forceRefresh = false) {
     return result;
 }
 
-// Static Posts Data (easy to modify without backend changes)
-function getStaticPosts() {
-    return [
-        {
-            id: 1,
-            title: "Cómo Preparar una Entrevista de Trabajo Exitosa",
-            excerpt: "Consejos esenciales para destacar en tu próxima entrevista laboral y conseguir el trabajo de tus sueños.",
-            content: `
-                <h4>Preparación antes de la entrevista</h4>
-                <p>La preparación es clave para el éxito en cualquier entrevista. Investiga sobre la empresa, sus valores y la posición específica.</p>
-                <h5>Pasos importantes:</h5>
-                <ul>
-                    <li>Investiga la empresa y el puesto</li>
-                    <li>Prepara respuestas para preguntas comunes</li>
-                    <li>Practica tu presentación personal</li>
-                    <li>Prepara preguntas inteligentes sobre la empresa</li>
-                    <li>Planifica tu vestimenta profesional</li>
-                </ul>
-                <p>Recuerda: una buena preparación te dará la confianza necesaria para brillar en la entrevista.</p>
-            `,
-            image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
-            date: "2024-08-15",
-            author: "Equipo Henmir"
-        },
-        {
-            id: 2,
-            title: "Las Habilidades Más Demandadas en 2024",
-            excerpt: "Descubre cuáles son las competencias que los empleadores valoran más en el mercado laboral actual.",
-            content: `
-                <h4>Habilidades Técnicas</h4>
-                <ul>
-                    <li>Competencias digitales básicas</li>
-                    <li>Manejo de herramientas de productividad</li>
-                    <li>Análisis de datos básico</li>
-                    <li>Marketing digital</li>
-                </ul>
-                <h4>Habilidades Blandas</h4>
-                <ul>
-                    <li>Comunicación efectiva</li>
-                    <li>Trabajo en equipo</li>
-                    <li>Adaptabilidad</li>
-                    <li>Liderazgo</li>
-                    <li>Pensamiento crítico</li>
-                </ul>
-                <p>El futuro del trabajo requiere una combinación equilibrada de habilidades técnicas y blandas.</p>
-            `,
-            image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=400&auto=format&fit=crop",
-            date: "2024-08-10",
-            author: "Ana García"
-        },
-        {
-            id: 3,
-            title: "Cómo Crear un CV Que Destaque",
-            excerpt: "Tips profesionales para diseñar un curriculum vitae que capture la atención de los reclutadores.",
-            content: `
-                <h4>Estructura de un CV efectivo</h4>
-                <ol>
-                    <li><strong>Datos personales:</strong> Información de contacto actualizada</li>
-                    <li><strong>Perfil profesional:</strong> Un resumen impactante de 2-3 líneas</li>
-                    <li><strong>Experiencia laboral:</strong> Logros cuantificables y relevantes</li>
-                    <li><strong>Educación:</strong> Títulos y certificaciones importantes</li>
-                    <li><strong>Habilidades:</strong> Competencias clave para el puesto</li>
-                </ol>
-                <h4>Consejos importantes</h4>
-                <ul>
-                    <li>Mantén el CV en máximo 2 páginas</li>
-                    <li>Usa un diseño limpio y profesional</li>
-                    <li>Adapta el contenido para cada aplicación</li>
-                    <li>Revisa la ortografía y gramática</li>
-                </ul>
-            `,
-            image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=400&auto=format&fit=crop",
-            date: "2024-08-05",
-            author: "Carlos López"
-        }
-    ];
+// AÑADE ESTA NUEVA FUNCIÓN
+async function loadPosts(forceRefresh = false) {
+    if (!forceRefresh && appData.posts.length > 0 && !shouldFetchData('posts')) {
+        return { success: true, data: appData.posts };
+    }
+
+    const result = await apiCall('/posts'); // Llama al nuevo endpoint público
+    if (result.success) {
+        appData.posts = result.data;
+        setCacheTimestamp('posts');
+    }
+    return result;
 }
 
 // Render Functions
-function renderVacancies(vacancies, container, limit = null) {
+    function renderVacancies(vacancies, container, limit = null) {
     if (!vacancies || vacancies.length === 0) {
         container.innerHTML = `
             <div class="col-12 text-center py-5">
@@ -218,6 +154,7 @@ function renderVacancies(vacancies, container, limit = null) {
     }
 
     const displayVacancies = limit ? vacancies.slice(0, limit) : vacancies;
+    const isLoggedIn = !!localStorage.getItem('candidateIdentity');
     
     container.innerHTML = displayVacancies.map((vacancy, index) => `
         <div class="col-lg-4 col-md-6">
@@ -228,26 +165,18 @@ function renderVacancies(vacancies, container, limit = null) {
                             <i class="bi bi-briefcase"></i>
                         </div>
                         <div class="flex-grow-1">
-                            <h5 class="card-title mb-1">${vacancy.puesto || vacancy.cargo_solicitado || 'Puesto no especificado'}</h5>
+                            <h5 class="card-title mb-1">${vacancy.puesto || 'Puesto no especificado'}</h5>
                             <div class="d-flex align-items-center text-muted small mb-2">
                                 <i class="bi bi-geo-alt me-1"></i>
-                                <span>${vacancy.ciudad || vacancy.ubicacion || 'No especificada'}</span>
+                                <span>${vacancy.ciudad || 'No especificada'}</span>
                             </div>
                         </div>
                     </div>
-                    
-                    <p class="card-text text-muted small flex-grow-1">
-                        ${(vacancy.requisitos || vacancy.descripcion || 'Requisitos no detallados.').substring(0, 120)}...
-                    </p>
-                    
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        ${vacancy.tipo_empleo ? `<span class="badge badge-custom">${vacancy.tipo_empleo}</span>` : ''}
-                        ${vacancy.salario ? `<span class="badge badge-custom">${vacancy.salario}</span>` : ''}
+                    <p class="card-text text-muted small flex-grow-1">${(vacancy.requisitos || '').substring(0, 120)}...</p>
+                    <div class="d-flex justify-content-between mt-auto">
+                        <button class="btn btn-outline-primary" onclick="showJobDetails(${JSON.stringify(vacancy).replace(/"/g, '&quot;')})">Ver Detalles</button>
+                        ${isLoggedIn ? `<button class="btn btn-primary apply-button" onclick="requestApplication(${vacancy.id_vacante})">Solicitar</button>` : ''}
                     </div>
-                    
-                    <button class="btn btn-primary w-100 mt-auto" onclick="showJobDetails(${JSON.stringify(vacancy).replace(/"/g, '&quot;')})">
-                        <i class="bi bi-eye me-2"></i>Ver Detalles
-                    </button>
                 </div>
             </div>
         </div>
@@ -279,106 +208,59 @@ function renderPosts(posts, container, limit = null) {
     `).join('');
 }
 
+// REEMPLAZA ESTA FUNCIÓN COMPLETA
 function renderStatusResults(result) {
     const container = document.getElementById('status-results-container');
     
     if (!result.success) {
-        container.innerHTML = `
-            <div class="alert alert-danger">
-                <i class="bi bi-exclamation-circle me-2"></i>
-                <strong>Error:</strong> ${result.error}
-            </div>
-        `;
+        container.innerHTML = `<div class="alert alert-danger"><strong>Error:</strong> ${result.error}</div>`;
         return;
     }
 
     const data = result.data;
     
     if (data.status === 'not_registered') {
-        container.innerHTML = `
-            <div class="card">
-                <div class="card-body text-center py-5">
-                    <div class="job-icon mx-auto mb-3" style="background-color: var(--warning); color: white;">
-                        <i class="bi bi-person-x"></i>
-                    </div>
-                    <h4 class="text-warning mb-3">Candidato No Encontrado</h4>
-                    <p class="text-muted mb-4">No encontramos tu perfil en nuestra base de datos. Verifica tu número de identidad o regístrate con nosotros.</p>
-                    <a href="#" class="btn btn-primary" data-page-target="page-register">
-                        <i class="bi bi-person-plus me-2"></i>Registrarme Ahora
-                    </a>
-                </div>
-            </div>
-        `;
-    } else if (data.status === 'registered_no_applications') {
-        container.innerHTML = `
-            <div class="card">
-                <div class="card-body text-center py-5">
-                    <div class="job-icon mx-auto mb-3" style="background-color: var(--primary); color: white;">
-                        <i class="bi bi-person-check"></i>
-                    </div>
-                    <h4 class="text-primary mb-3">¡Hola, ${data.candidate_name}!</h4>
-                    <p class="text-muted mb-4">Tu perfil está registrado correctamente, pero aún no tienes postulaciones activas.</p>
-                    <a href="#" class="btn btn-primary" data-page-target="page-vacancies">
-                        <i class="bi bi-search me-2"></i>Explorar Vacantes
-                    </a>
-                </div>
-            </div>
-        `;
-    } else if (data.status === 'has_applications') {
-        const applicationsHtml = data.applications.map(app => {
-            let badgeClass = 'bg-secondary';
-            let badgeIcon = 'clock';
-            
-            if (['En Entrevista', 'Pre-seleccionado'].includes(app.estado)) {
-                badgeClass = 'bg-info';
-                badgeIcon = 'person-video2';
-            } else if (app.estado === 'Oferta') {
-                badgeClass = 'bg-warning text-dark';
-                badgeIcon = 'envelope-check';
-            } else if (app.estado === 'Contratado') {
-                badgeClass = 'bg-success';
-                badgeIcon = 'check-circle';
-            } else if (app.estado === 'Rechazado') {
-                badgeClass = 'bg-danger';
-                badgeIcon = 'x-circle';
-            }
+        container.innerHTML = `<div class="card"><div class="card-body text-center py-5"><h4 class="text-warning mb-3">Candidato No Encontrado</h4><p class="text-muted mb-4">No encontramos tu perfil. Verifica tu número de identidad o regístrate.</p><a href="#" class="btn btn-primary" data-page-target="page-register">Registrarme Ahora</a></div></div>`;
+        return;
+    }
+    
+    if (data.status === 'profile_found') {
+        // -- Renderizar Postulaciones y Entrevistas --
+        let applicationsHtml = data.applications.length > 0 ? data.applications.map(app => `
+            <li class="list-group-item">
+                <h6>${app.cargo_solicitado}</h6>
+                <span class="badge bg-info">${app.estado}</span>
+                <small class="d-block text-muted">Aplicado: ${app.fecha_aplicacion}</small>
+                ${app.fecha_entrevista ? `<div class="mt-2 alert alert-success py-1"><strong>Entrevista:</strong> ${app.fecha_entrevista}</div>` : ''}
+            </li>
+        `).join('') : '<li class="list-group-item text-muted">No tienes postulaciones activas.</li>';
 
-            return `
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="card-title mb-0">${app.cargo_solicitado}</h6>
-                            <span class="badge ${badgeClass}">
-                                <i class="bi bi-${badgeIcon} me-1"></i>
-                                ${app.estado}
-                            </span>
-                        </div>
-                        <p class="text-muted small mb-2">
-                            <i class="bi bi-calendar me-1"></i>
-                            Aplicado: ${formatDate(app.fecha_aplicacion)}
-                        </p>
-                        ${app.fecha_entrevista ? `
-                            <div class="alert alert-info py-2 mb-0">
-                                <i class="bi bi-calendar-event me-2"></i>
-                                <strong>Entrevista programada:</strong> ${formatDate(app.fecha_entrevista)}
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
+        // -- Renderizar Solicitudes de Postulación --
+        let requestsHtml = data.application_requests.length > 0 ? data.application_requests.map(req => `
+            <li class="list-group-item">
+                <h6>${req.cargo_solicitado}</h6>
+                <span class="badge bg-secondary">${req.estado}</span>
+                <small class="d-block text-muted">Solicitado: ${req.fecha_solicitud}</small>
+            </li>
+        `).join('') : '<li class="list-group-item text-muted">No tienes solicitudes recientes.</li>';
 
         container.innerHTML = `
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-person-circle me-2"></i>
-                        Hola, ${data.candidate_name}
-                    </h5>
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">¡Hola, ${data.candidate_name}!</h5>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="logoutAndRedirect()">Salir</button>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted mb-4">Este es el estado actual de tus procesos de selección:</p>
-                    ${applicationsHtml}
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Mis Postulaciones</h6>
+                            <ul class="list-group">${applicationsHtml}</ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Mis Solicitudes</h6>
+                            <ul class="list-group">${requestsHtml}</ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -443,8 +325,15 @@ function showJobDetails(vacancy) {
     new bootstrap.Modal(modal).show();
 }
 
-
-// AÑADE ESTE BLOQUE DE 2 FUNCIONES COMPLETAS
+// AÑADE ESTA NUEVA FUNCIÓN
+function logoutAndRedirect() {
+    localStorage.removeItem('candidateIdentity');
+    document.body.classList.remove('logged-in');
+    document.getElementById('status-results-container').innerHTML = '';
+    document.getElementById('status-identity').value = '';
+    showToast('Has salido de tu perfil.', 'success');
+    navigateToPage('page-home');
+}
 
 /**
  * Muestra un modal de Bootstrap genérico con un título y contenido HTML.
@@ -483,34 +372,14 @@ function closeModal() {
         if (bsModal) bsModal.hide();
     }
 }
-/**
- * Función "orquestadora" que se llama al hacer clic en "Solicitar Postulación".
- * Decide qué hacer basándose en el estado de la sesión del candidato.
- * @param {number} vacancyId - El ID de la vacante a la que se aplica.
- */
+// REEMPLAZA ESTA FUNCIÓN COMPLETA
 function initiateApplicationProcess(vacancyId) {
     const identity = localStorage.getItem('candidateIdentity');
-
     if (identity) {
-        // Si el usuario ya está "logueado", procede directamente a la solicitud.
         requestApplication(vacancyId);
     } else {
-        // Si no está logueado, muestra un modal para que ingrese su ID o se registre.
-        bootstrap.Modal.getInstance(document.getElementById('jobModal')).hide(); // Oculta el modal de detalles
-        
-        const modalContent = `
-            <p class="text-muted">Para continuar, por favor identifícate.</p>
-            <div class="mb-3">
-                <label for="modal-identity-input" class="form-label"><b>Si ya estás registrado</b>, ingresa tu No. de Identidad:</label>
-                <input type="text" class="form-control" id="modal-identity-input" placeholder="No. de Identidad sin guiones">
-                <button class="btn btn-primary w-100 mt-2" onclick="loginAndApply(${vacancyId})">Ingresar y Solicitar</button>
-            </div>
-            <hr>
-            <p class="text-muted"><b>Si eres nuevo</b>, regístrate primero para poder postular.</p>
-            <button class="btn btn-outline-primary w-100" onclick="registerAndApply()">Ir al Formulario de Registro</button>
-        `;
-        // Usamos una función genérica para mostrar modales que ya debes tener
-        showModal('Identifícate para Postular', modalContent, []); 
+        alert("Para postular, primero debes ingresar a tu perfil desde la sección 'Mi Estado'.");
+        navigateToPage('page-status');
     }
 }
 
@@ -631,24 +500,38 @@ async function loadHomePage() {
     const featuredContainer = document.getElementById('featured-vacancies-container');
     const postsContainer = document.getElementById('featured-posts-container');
 
-    // Load featured vacancies
+    // Carga de vacantes (sin cambios)
     const vacanciesResult = await loadVacancies();
     if (vacanciesResult.success) {
         renderVacancies(vacanciesResult.data, featuredContainer, 3);
     } else {
-        featuredContainer.innerHTML = `
-            <div class="col-12 text-center">
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    No se pudieron cargar las vacantes: ${vacanciesResult.error}
-                </div>
-            </div>
-        `;
+        featuredContainer.innerHTML = `<div class="col-12 text-center"><div class="alert alert-warning">No se pudieron cargar las vacantes: ${vacanciesResult.error}</div></div>`;
     }
 
-    // Load featured posts
-    renderPosts(getStaticPosts(), postsContainer, 3);
+    // --- CAMBIO AQUÍ ---
+    // Carga de posts desde la API
+    const postsResult = await loadPosts();
+    if (postsResult.success) {
+        renderPosts(postsResult.data, postsContainer, 3);
+    } else {
+         postsContainer.innerHTML = `<div class="col-12 text-center"><div class="alert alert-warning">No se pudieron cargar las noticias.</div></div>`;
+    }
 }
+
+async function loadPostsPage() {
+    const container = document.getElementById('all-posts-container');
+    container.innerHTML = `<div class="col-12 text-center py-5"><div class="spinner-custom mx-auto"></div><p class="mt-3 text-muted">Cargando noticias...</p></div>`;
+
+    // --- CAMBIO AQUÍ ---
+    const result = await loadPosts(true); // Forzar recarga en la página de posts
+    
+    if (result.success) {
+        renderPosts(result.data, container);
+    } else {
+        container.innerHTML = `<div class="col-12 text-center"><div class="alert alert-danger">Error al cargar noticias: ${result.error}</div></div>`;
+    }
+}
+
 
 async function loadVacanciesPage() {
     const container = document.getElementById('all-vacancies-container');
@@ -830,27 +713,25 @@ async function handleStatusCheckSubmit(event) {
     const identityNumber = identityInput.value.trim().replace(/-/g, '');
     
     if (!identityNumber) {
-        resultsContainer.innerHTML = `
-            <div class="alert alert-warning">
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                Por favor, ingresa tu número de identidad.
-            </div>
-        `;
+        resultsContainer.innerHTML = `<div class="alert alert-warning">Por favor, ingresa tu número de identidad.</div>`;
         return;
     }
 
-    // Show loading state
-    resultsContainer.innerHTML = `
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <div class="spinner-custom mx-auto"></div>
-                <p class="mt-3 text-muted">Consultando tu estado...</p>
-            </div>
-        </div>
-    `;
+    resultsContainer.innerHTML = `<div class="card"><div class="card-body text-center py-5"><div class="spinner-custom mx-auto"></div><p class="mt-3 text-muted">Buscando tu perfil...</p></div></div>`;
 
     const result = await apiCall(`/status/${identityNumber}`);
-    renderStatusResults(result);
+    
+    if (result.success && result.data.status === 'profile_found') {
+        // ¡Éxito! Guardamos la identidad en el navegador
+        localStorage.setItem('candidateIdentity', identityNumber);
+        document.body.classList.add('logged-in'); // Añadimos una clase al body para control global
+    } else {
+        // Si falla, nos aseguramos de que no haya sesión activa
+        localStorage.removeItem('candidateIdentity');
+        document.body.classList.remove('logged-in');
+    }
+    
+    renderStatusResults(result); // Renderizamos el perfil o el mensaje de error
 }
 
 // Navbar Scroll Effect
