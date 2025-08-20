@@ -501,22 +501,26 @@
                             <div class="card shadow-lg">
                                 <div class="card-body p-5">
                                     <h4 class="mb-4">Envíanos un Mensaje</h4>
-                                    <form id="contact-form">
+                                    <form id="contact-form" class="needs-validation" novalidate>
                                         <div class="mb-3">
                                             <label for="contact-name" class="form-label">Nombre Completo</label>
                                             <input type="text" class="form-control" id="contact-name" required>
-                                        </div>
+                                            <div class="invalid-feedback">Por favor ingresa tu nombre.</div>
+                                        </div>                         
                                         <div class="mb-3">
                                             <label for="contact-email" class="form-label">Correo Electrónico</label>
                                             <input type="email" class="form-control" id="contact-email" required>
+                                            <div class="invalid-feedback">Ingresa un correo válido.</div>
                                         </div>
                                         <div class="mb-3">
                                             <label for="contact-subject" class="form-label">Asunto</label>
                                             <input type="text" class="form-control" id="contact-subject" required>
+                                            <div class="invalid-feedback">El asunto es requerido.</div>
                                         </div>
                                         <div class="mb-3">
                                             <label for="contact-message" class="form-label">Mensaje</label>
                                             <textarea class="form-control" id="contact-message" rows="5" required></textarea>
+                                            <div class="invalid-feedback">Por favor escribe tu mensaje.</div>
                                         </div>
                                         <button type="submit" class="btn btn-primary w-100 btn-lg">
                                             <i class="bi bi-send me-2"></i>Enviar Mensaje
@@ -543,7 +547,7 @@
                                 <div>
                                     <h5>Correo Electrónico</h5>
                                     <p class="text-muted">
-                                        <a href="mailto:info@henmir.com">info@henmir.com</a>
+                                        <a href="mailto:agencia.henmir@gmail.com">agencia.henmir@gmail.com</a>
                                     </p>
                                 </div>
                             </div>
@@ -554,7 +558,7 @@
                                 <div>
                                     <h5>WhatsApp</h5>
                                     <p class="text-muted">
-                                        <a href="https://wa.me/50400000000">+504 0000-0000</a>
+                                        <a href="https://wa.me/50499221198">+504 9922-1198</a>
                                     </p>
                                 </div>
                             </div>

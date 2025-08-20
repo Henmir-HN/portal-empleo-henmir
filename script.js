@@ -468,19 +468,20 @@ function acceptTerms() {
 
 
 // Navigation Functions
+
 function navigateToPage(targetPageId) {
-    // Hide all pages
+    // Oculta todas las páginas
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
     });
     
-    // Show target page
+    // Muestra la página de destino
     const targetPage = document.getElementById(targetPageId);
     if (targetPage) {
         targetPage.classList.add('active');
     }
 
-    // Update navbar active state
+    // Actualiza el estado activo de la barra de navegación
     document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
         link.classList.remove('active');
         if (link.dataset.pageTarget === targetPageId) {
@@ -488,19 +489,24 @@ function navigateToPage(targetPageId) {
         }
     });
 
-    // Update URL hash
+    // Actualiza el hash de la URL
     window.location.hash = `#!/${targetPageId}`;
 
-    // Scroll to top
+    // Desplaza la vista a la parte superior
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Load page-specific data
+    // --- CAMBIO QUIRÚRGICO AQUÍ ---
+    // Carga los datos específicos de la página O configura los formularios
     if (targetPageId === 'page-home') {
         loadHomePage();
     } else if (targetPageId === 'page-vacancies') {
         loadVacanciesPage();
     } else if (targetPageId === 'page-posts') {
         loadPostsPage();
+    } else if (targetPageId === 'page-register' || targetPageId === 'page-contact') {
+        // Si la página es la de registro o contacto, nos aseguramos de que
+        // la validación del formulario esté activa en ese momento.
+        setupFormValidation();
     }
 }
 
