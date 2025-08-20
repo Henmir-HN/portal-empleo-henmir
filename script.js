@@ -183,22 +183,26 @@ async function loadPosts(forceRefresh = false) {
     `).join('');
 }
 
+// REEMPLAZA ESTA FUNCIÓN COMPLETA
 function renderPosts(posts, container, limit = null) {
     const displayPosts = limit ? posts.slice(0, limit) : posts;
     
     container.innerHTML = displayPosts.map((post, index) => `
         <div class="col-lg-4 col-md-6">
             <div class="card h-100 fade-in" style="animation-delay: ${index * 0.1}s">
-                <img src="${post.image}" class="card-img-top" alt="${post.title}" style="height: 200px; object-fit: cover;">
+                <!-- CAMBIO CLAVE AQUÍ: Usamos post.image_url -->
+                <img src="${post.image_url}" class="card-img-top" alt="${post.title}" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">${post.title}</h5>
                     <p class="card-text text-muted small flex-grow-1">${post.excerpt}</p>
                     <div class="d-flex justify-content-between align-items-center mt-auto pt-3">
                         <small class="text-muted">
                             <i class="bi bi-calendar me-1"></i>
-                            ${formatDate(post.date)}
+                            <!-- CAMBIO CLAVE AQUÍ: Usamos post.fecha_publicacion -->
+                            ${formatDate(post.fecha_publicacion)}
                         </small>
-                        <button class="btn btn-outline-primary btn-sm" onclick="showPostDetails(${post.id})">
+                        <!-- CAMBIO CLAVE AQUÍ: Pasamos el id_post de la base de datos -->
+                        <button class="btn btn-outline-primary btn-sm" onclick="showPostDetails(${post.id_post})">
                             Leer más
                         </button>
                     </div>
@@ -410,10 +414,20 @@ function registerAndApply() {
 
 
 function showPostDetails(postId) {
-    const posts = getStaticPosts();
-    const post = posts.find(p => p.id === postId);
+    // Busca el post en los datos que ya tenemos de la API
+    const post = appData.posts.find(p => p.id_post === postId);
     
-    if (!post) return;
+    if (!post) {
+        showToast('No se pudo encontrar el artículo.', 'error');
+        return;
+    }
+
+    // Renombramos image_url a image para que coincida con lo que el modal espera
+    const displayPost = {
+        ...post,
+        image: post.image_url,
+        date: post.fecha_publicacion // Usamos la fecha de la base de datos
+    };
 
     const modal = document.createElement('div');
     modal.className = 'modal fade';
@@ -421,21 +435,19 @@ function showPostDetails(postId) {
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">${post.title}</h5>
+                    <h5 class="modal-title">${displayPost.title}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <img src="${post.image}" class="img-fluid rounded mb-4" alt="${post.title}">
+                    <img src="${displayPost.image}" class="img-fluid rounded mb-4" alt="${displayPost.title}">
                     <div class="d-flex justify-content-between text-muted small mb-4">
-                        <span><i class="bi bi-person me-1"></i>Por ${post.author}</span>
-                        <span><i class="bi bi-calendar me-1"></i>${formatDate(post.date)}</span>
+                        <span><i class="bi bi-person me-1"></i>Por ${displayPost.author}</span>
+                        <span><i class="bi bi-calendar me-1"></i>${formatDate(displayPost.date)}</span>
                     </div>
-                    ${post.content}
+                    ${displayPost.content}
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
-                        Cerrar
-                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -444,10 +456,7 @@ function showPostDetails(postId) {
     document.body.appendChild(modal);
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
-
-    modal.addEventListener('hidden.bs.modal', () => {
-        modal.remove();
-    });
+    modal.addEventListener('hidden.bs.modal', () => modal.remove());
 }
 
 function acceptTerms() {
@@ -518,16 +527,19 @@ async function loadHomePage() {
     }
 }
 
+
 async function loadPostsPage() {
     const container = document.getElementById('all-posts-container');
     container.innerHTML = `<div class="col-12 text-center py-5"><div class="spinner-custom mx-auto"></div><p class="mt-3 text-muted">Cargando noticias...</p></div>`;
 
-    // --- CAMBIO AQUÍ ---
-    const result = await loadPosts(true); // Forzar recarga en la página de posts
+    // Llama a la nueva función que obtiene los posts de la API
+    const result = await loadPosts(true); // El 'true' fuerza la recarga de datos desde el servidor
     
     if (result.success) {
+        // Si la llamada a la API fue exitosa, renderiza los posts
         renderPosts(result.data, container);
     } else {
+        // Si hubo un error, muestra un mensaje de error
         container.innerHTML = `<div class="col-12 text-center"><div class="alert alert-danger">Error al cargar noticias: ${result.error}</div></div>`;
     }
 }
@@ -563,10 +575,6 @@ async function loadVacanciesPage() {
     }
 }
 
-function loadPostsPage() {
-    const container = document.getElementById('all-posts-container');
-    renderPosts(getStaticPosts(), container);
-}
 
 // Filter Functions
 function applyFilters() {
