@@ -390,6 +390,7 @@ function showJobDetails(vacancy) {
     const modal = document.getElementById('jobModal');
     const modalTitle = document.getElementById('jobModalLabel');
     const modalBody = document.getElementById('jobModalBody');
+    const modalFooter = modal.querySelector('.modal-footer'); // Seleccionamos el footer para cambiar el botón
 
     modalTitle.textContent = vacancy.puesto || vacancy.cargo_solicitado || 'Detalles de la Vacante';
     
@@ -405,12 +406,6 @@ function showJobDetails(vacancy) {
                     <div class="mb-3">
                         <strong>Salario:</strong>
                         <span class="ms-2">${vacancy.salario}</span>
-                    </div>
-                ` : ''}
-                ${vacancy.tipo_empleo ? `
-                    <div class="mb-3">
-                        <strong>Tipo de empleo:</strong>
-                        <span class="ms-2">${vacancy.tipo_empleo}</span>
                     </div>
                 ` : ''}
                 
@@ -434,8 +429,133 @@ function showJobDetails(vacancy) {
         </div>
     `;
 
+    // --- CAMBIO QUIRÚRGICO AQUÍ ---
+    // El botón ahora llama a nuestra nueva función lógica y pasa el ID de la vacante.
+    modalFooter.innerHTML = `
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Cerrar
+        </button>
+        <button type="button" class="btn btn-primary" onclick="initiateApplicationProcess(${vacancy.id_vacante})">
+            <i class="bi bi-send me-2"></i>Solicitar Postulación
+        </button>
+    `;
+
     new bootstrap.Modal(modal).show();
 }
+
+
+// AÑADE ESTE BLOQUE DE 2 FUNCIONES COMPLETAS
+
+/**
+ * Muestra un modal de Bootstrap genérico con un título y contenido HTML.
+ * @param {string} title - El título que aparecerá en la cabecera del modal.
+ * @param {string} content - El contenido HTML que se insertará en el cuerpo del modal.
+ */
+function showModal(title, content) {
+    // Primero, nos aseguramos de que no haya un modal viejo abierto
+    const oldModal = document.getElementById('genericModal');
+    if (oldModal) {
+        oldModal.remove();
+    }
+
+    // Creamos la estructura del modal con el estilo de Bootstrap
+    const modalElement = document.createElement('div');
+    modalElement.className = 'modal fade';
+    modalElement.id = 'genericModal';
+    modalElement.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">${title}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ${content}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Lo añadimos al cuerpo del documento y lo mostramos
+    document.body.appendChild(modalElement);
+    const bsModal = new bootstrap.Modal(modalElement);
+    bsModal.show();
+
+    // Limpieza: eliminamos el elemento del modal del DOM cuando se oculta
+    modalElement.addEventListener('hidden.bs.modal', () => {
+        modalElement.remove();
+    });
+}
+
+/**
+ * Cierra el modal genérico que hemos creado.
+ */
+function closeModal() {
+    const modalElement = document.getElementById('genericModal');
+    if (modalElement) {
+        const bsModal = bootstrap.Modal.getInstance(modalElement);
+        if (bsModal) {
+            bsModal.hide();
+        }
+    }
+}
+
+/**
+ * Función "orquestadora" que se llama al hacer clic en "Solicitar Postulación".
+ * Decide qué hacer basándose en el estado de la sesión del candidato.
+ * @param {number} vacancyId - El ID de la vacante a la que se aplica.
+ */
+function initiateApplicationProcess(vacancyId) {
+    const identity = localStorage.getItem('candidateIdentity');
+
+    if (identity) {
+        // Si el usuario ya está "logueado", procede directamente a la solicitud.
+        requestApplication(vacancyId);
+    } else {
+        // Si no está logueado, muestra un modal para que ingrese su ID o se registre.
+        bootstrap.Modal.getInstance(document.getElementById('jobModal')).hide(); // Oculta el modal de detalles
+        
+        const modalContent = `
+            <p class="text-muted">Para continuar, por favor identifícate.</p>
+            <div class="mb-3">
+                <label for="modal-identity-input" class="form-label"><b>Si ya estás registrado</b>, ingresa tu No. de Identidad:</label>
+                <input type="text" class="form-control" id="modal-identity-input" placeholder="No. de Identidad sin guiones">
+                <button class="btn btn-primary w-100 mt-2" onclick="loginAndApply(${vacancyId})">Ingresar y Solicitar</button>
+            </div>
+            <hr>
+            <p class="text-muted"><b>Si eres nuevo</b>, regístrate primero para poder postular.</p>
+            <button class="btn btn-outline-primary w-100" onclick="registerAndApply()">Ir al Formulario de Registro</button>
+        `;
+        // Usamos una función genérica para mostrar modales que ya debes tener
+        showModal('Identifícate para Postular', modalContent, []); 
+    }
+}
+
+/**
+ * Se llama desde el modal de identificación. Guarda la identidad y procede con la postulación.
+ * @param {number} vacancyId - El ID de la vacante a la que se aplica.
+ */
+function loginAndApply(vacancyId) {
+    const identityInput = document.getElementById('modal-identity-input');
+    const identity = identityInput.value.trim();
+    if (identity) {
+        localStorage.setItem('candidateIdentity', identity);
+        checkLoginStatus();
+        closeModal(); // Cierra el modal de identificación
+        requestApplication(vacancyId);
+    } else {
+        alert('Por favor, ingresa un número de identidad válido.');
+    }
+}
+
+/**
+ * Se llama desde el modal de identificación. Lleva al usuario a la página de registro.
+ */
+function registerAndApply() {
+    closeModal();
+    navigateToPage('page-register');
+}
+
 
 function showPostDetails(postId) {
     const posts = getStaticPosts();
@@ -485,13 +605,6 @@ function acceptTerms() {
     }
 }
 
-function applyToJob() {
-    showToast('Para aplicar a esta vacante, necesitas estar registrado en nuestro sistema.', 'info');
-    setTimeout(() => {
-        navigateToPage('page-register');
-        bootstrap.Modal.getInstance(document.getElementById('jobModal')).hide();
-    }, 2000);
-}
 
 // Navigation Functions
 function navigateToPage(targetPageId) {
@@ -831,3 +944,80 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log('Henmir Application Loaded Successfully!');
 });
+
+// --- AÑADE ESTE BLOQUE COMPLETO A TU SCRIPT.JS PÚBLICO ---
+
+// Se ejecuta cuando la página carga para ver si ya hay un candidato "logueado"
+document.addEventListener('DOMContentLoaded', () => {
+    checkLoginStatus();
+});
+
+function loginCandidate() {
+    const identityInput = document.getElementById('identity-input'); // Asegúrate de que tu HTML tenga un input con este ID
+    const identity = identityInput.value.trim();
+    if (identity) {
+        localStorage.setItem('candidateIdentity', identity); // Guarda la identidad en la memoria del navegador
+        checkLoginStatus();
+        alert('¡Has ingresado! Ahora puedes solicitar postulaciones.');
+    }
+}
+
+function logoutCandidate() {
+    localStorage.removeItem('candidateIdentity'); // Borra la identidad
+    checkLoginStatus();
+}
+
+function checkLoginStatus() {
+    const identity = localStorage.getItem('candidateIdentity');
+    const welcomeMessage = document.getElementById('welcome-message');
+    const loginForm = document.getElementById('login-form');
+    const logoutButton = document.getElementById('logout-button');
+    // --- CAMBIO QUIRÚRGICO AQUÍ ---
+    // Usamos el ID correcto del contenedor de la página de vacantes
+    const vacancyList = document.getElementById('all-vacancies-container'); 
+
+    if (identity) {
+        if (welcomeMessage) welcomeMessage.textContent = `Bienvenido(a). Estás ingresado con la identidad: ...${identity.slice(-4)}`;
+        if (welcomeMessage) welcomeMessage.style.display = 'block';
+        if (loginForm) loginForm.style.display = 'none';
+        if (logoutButton) logoutButton.style.display = 'block';
+        if(vacancyList) vacancyList.classList.add('logged-in');
+    } else {
+        if (welcomeMessage) welcomeMessage.style.display = 'none';
+        if (loginForm) loginForm.style.display = 'block';
+        if (logoutButton) logoutButton.style.display = 'none';
+        if(vacancyList) vacancyList.classList.remove('logged-in');
+    }
+}
+
+async function requestApplication(vacancyId) {
+    const identity = localStorage.getItem('candidateIdentity');
+    if (!identity) {
+        alert('Por favor, ingresa tu número de identidad primero para poder postular.');
+        return;
+    }
+
+    if (!confirm('¿Confirmas que deseas enviar tu solicitud para esta vacante?')) {
+        return;
+    }
+
+    try {
+        const response = await apiCall('/request-application', {
+             method: 'POST',
+             body: JSON.stringify({
+                identity_number: identity,
+                vacancy_id: vacancyId
+            })
+        });
+
+        if (response.success) {
+            // El mensaje de éxito ahora está dentro de response.data.message
+            alert(response.data.message); 
+        } else {
+            // El mensaje de error está en response.error
+            throw new Error(response.error);
+        }
+    } catch (error) {
+        alert('Error al enviar la solicitud: ' + error.message);
+    }
+}
