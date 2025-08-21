@@ -685,25 +685,49 @@ async function handleRegistrationForm(form) {
     formData.append('disponibilidad_rotativos', document.querySelector('input[name="shifts"]:checked').value);
     formData.append('experiencia', document.getElementById('experience').value);
 
-    // Función para convertir Word a PDF
-    async function convertWordToPdf(wordFile) {
-        if (!wordFile) return null;
-        if (wordFile.type === 'application/pdf') return wordFile; // Si ya es PDF, no hacemos nada
+    // Función para convertir Word a PDF (ahora retorna una promesa)
+    function convertWordToPdf(wordFile, formData) {
+        return new Promise((resolve, reject) => {
+            if (!wordFile) {
+                reject(new Error('No se proporcionó archivo'));
+                return;
+            }
+            
+            if (wordFile.type === 'application/pdf') {
+                // Si ya es PDF, no hacemos nada y continuamos
+                formData.set('cv_file', wordFile);
+                resolve(formData);
+                return;
+            }
 
-        try {
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const arrayBuffer = e.target.result;
-                const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
-                const html = result.value;
+            try {
+                // Verificar que las librerías estén cargadas
+                if (!window.mammoth) {
+                    throw new Error('La librería mammoth no está disponible. Verifica tu conexión a internet.');
+                }
+                if (!window.jspdf) {
+                    throw new Error('La librería jsPDF no está disponible. Verifica tu conexión a internet.');
+                }
+                
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const arrayBuffer = e.target.result;
+                        const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                        const html = result.value;
 
-                // Convertir HTML a PDF (usando jsPDF - ejemplo)
-                const pdf = new jsPDF(); // Asegúrate de que jsPDF esté incluido
-                pdf.fromHTML(html, 15, 15, {
-                    width: 170, // Ancho del contenido
-                    callback: function(doc) {
+                        // Convertir HTML a PDF (usando jsPDF)
+                        const { jsPDF } = window.jspdf; // Sintaxis correcta para jsPDF 2.x
+                        const pdf = new jsPDF();
+                        
+                        // Crear contenido simple del HTML
+                        const textContent = html.replace(/<[^>]*>/g, ''); // Remover tags HTML
+                        const lines = pdf.splitTextToSize(textContent, 170); // Dividir texto en líneas
+                        
+                        pdf.text(lines, 15, 15);
+
                         // Convertir el PDF a Blob
-                        const pdfBlob = doc.output('blob');
+                        const pdfBlob = pdf.output('blob');
 
                         // Crear un nuevo archivo con el Blob
                         const newPdfFile = new File([pdfBlob], "converted.pdf", {
@@ -714,18 +738,22 @@ async function handleRegistrationForm(form) {
                         // Reemplazar el archivo original con el PDF convertido
                         formData.set('cv_file', newPdfFile);
                         
-                        // Continuar con el proceso de registro
-                        sendRegistrationData(formData);
+                        resolve(formData);
+                    } catch (innerError) {
+                        reject(innerError);
                     }
-                });
-            }
-            reader.readAsArrayBuffer(wordFile);
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error('Error al leer el archivo'));
+                };
+                
+                reader.readAsArrayBuffer(wordFile);
 
-        } catch (error) {
-            console.error("Error al convertir Word a PDF: ", error);
-            showToast('Error al convertir el archivo Word a PDF. Intenta con un archivo PDF.', 'error');
-            return null;
-        }
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 
     // Función para enviar los datos de registro (separada para manejar la asincronía)
@@ -761,12 +789,20 @@ async function handleRegistrationForm(form) {
     // Obtener el archivo del CV
     const cvFile = document.getElementById('cv').files[0];
 
-    // Convertir el archivo Word a PDF (si es necesario)
-    if (cvFile && (cvFile.type === 'application/msword' || cvFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
-        convertWordToPdf(cvFile);
-    } else {
-        formData.set('cv_file', cvFile);
-        sendRegistrationData(formData); // Si no es Word, enviar directamente
+    try {
+        // Convertir el archivo Word a PDF (si es necesario) o usar directamente si es PDF
+        if (cvFile && (cvFile.type === 'application/msword' || cvFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+            // Es un archivo Word, necesita conversión
+            const processedFormData = await convertWordToPdf(cvFile, formData);
+            await sendRegistrationData(processedFormData);
+        } else {
+            // Es PDF o no hay archivo, procesar directamente
+            formData.set('cv_file', cvFile);
+            await sendRegistrationData(formData);
+        }
+    } catch (error) {
+        console.error('Error durante el procesamiento del archivo:', error);
+        showToast(error.message || 'Error al procesar el archivo. Intenta con un archivo PDF.', 'error');
     }
 }
 
