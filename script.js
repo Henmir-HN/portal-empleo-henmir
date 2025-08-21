@@ -629,7 +629,6 @@ function setupFormValidation() {
     });
 }
 
-// REEMPLAZA LA FUNCIÓN handleFormSubmission COMPLETA CON ESTA VERSIÓN
 async function handleFormSubmission(form) {
     const submitButton = form.querySelector('button[type="submit"]');
     const originalButtonText = submitButton.innerHTML;
@@ -672,10 +671,9 @@ async function handleFormSubmission(form) {
     submitButton.innerHTML = originalButtonText;
 }
 
-
 async function handleRegistrationForm(form) {
     const formData = new FormData();
-    
+
     // Recopilar datos del formulario
     formData.append('nombre_completo', document.getElementById('fullName').value);
     formData.append('identidad', document.getElementById('identityNumber').value);
@@ -687,34 +685,88 @@ async function handleRegistrationForm(form) {
     formData.append('disponibilidad_rotativos', document.querySelector('input[name="shifts"]:checked').value);
     formData.append('experiencia', document.getElementById('experience').value);
 
-    // Adjuntar el archivo del CV
-    const cvFile = document.getElementById('cv').files[0];
-    if (cvFile) {
-        formData.append('cv_file', cvFile);
-    }
-    
-    // Adjuntar los archivos de identidad (puede ser más de uno)
-    const identityFiles = document.getElementById('identity').files;
-    for (let i = 0; i < identityFiles.length; i++) {
-        formData.append('identidad_files', identityFiles[i]);
+    // Función para convertir Word a PDF
+    async function convertWordToPdf(wordFile) {
+        if (!wordFile) return null;
+        if (wordFile.type === 'application/pdf') return wordFile; // Si ya es PDF, no hacemos nada
+
+        try {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const arrayBuffer = e.target.result;
+                const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                const html = result.value;
+
+                // Convertir HTML a PDF (usando jsPDF - ejemplo)
+                const pdf = new jsPDF(); // Asegúrate de que jsPDF esté incluido
+                pdf.fromHTML(html, 15, 15, {
+                    width: 170, // Ancho del contenido
+                    callback: function(doc) {
+                        // Convertir el PDF a Blob
+                        const pdfBlob = doc.output('blob');
+
+                        // Crear un nuevo archivo con el Blob
+                        const newPdfFile = new File([pdfBlob], "converted.pdf", {
+                            type: "application/pdf",
+                            lastModified: Date.now()
+                        });
+
+                        // Reemplazar el archivo original con el PDF convertido
+                        formData.set('cv_file', newPdfFile);
+                        
+                        // Continuar con el proceso de registro
+                        sendRegistrationData(formData);
+                    }
+                });
+            }
+            reader.readAsArrayBuffer(wordFile);
+
+        } catch (error) {
+            console.error("Error al convertir Word a PDF: ", error);
+            showToast('Error al convertir el archivo Word a PDF. Intenta con un archivo PDF.', 'error');
+            return null;
+        }
     }
 
-    // --- ESTA ES LA IMPLEMENTACIÓN REAL, SIN SIMULACIÓN ---
-    const result = await apiCall('/register', {
-        method: 'POST',
-        body: formData // La función apiCall ahora sabe cómo manejar FormData
-    });
-    
-    if (result.success) {
-        showToast('¡Registro exitoso! Te contactaremos cuando tengamos oportunidades que coincidan con tu perfil.', 'success');
-        form.reset();
-        form.classList.remove('was-validated');
-        
-        setTimeout(() => {
-            navigateToPage('page-status');
-        }, 3000);
+    // Función para enviar los datos de registro (separada para manejar la asincronía)
+    async function sendRegistrationData(formData) {
+        // Adjuntar el archivo del CV (PDF convertido)
+        const cvFile = formData.get('cv_file'); // Obtener el archivo del FormData
+
+        // Adjuntar los archivos de identidad (puede ser más de uno)
+        const identityFiles = document.getElementById('identity').files;
+        for (let i = 0; i < identityFiles.length; i++) {
+            formData.append('identidad_files', identityFiles[i]);
+        }
+
+        // --- ESTA ES LA IMPLEMENTACIÓN REAL, SIN SIMULACIÓN ---
+        const result = await apiCall('/register', {
+            method: 'POST',
+            body: formData // La función apiCall ahora sabe cómo manejar FormData
+        });
+
+        if (result.success) {
+            showToast('¡Registro exitoso! Te contactaremos cuando tengamos oportunidades que coincidan con tu perfil.', 'success');
+            form.reset();
+            form.classList.remove('was-validated');
+
+            setTimeout(() => {
+                navigateToPage('page-status');
+            }, 3000);
+        } else {
+            showToast(`Error en el registro: ${result.error || 'Inténtalo de nuevo.'}`, 'danger');
+        }
+    }
+
+    // Obtener el archivo del CV
+    const cvFile = document.getElementById('cv').files[0];
+
+    // Convertir el archivo Word a PDF (si es necesario)
+    if (cvFile && (cvFile.type === 'application/msword' || cvFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+        convertWordToPdf(cvFile);
     } else {
-        showToast(`Error en el registro: ${result.error || 'Inténtalo de nuevo.'}`, 'danger');
+        formData.set('cv_file', cvFile);
+        sendRegistrationData(formData); // Si no es Word, enviar directamente
     }
 }
 
