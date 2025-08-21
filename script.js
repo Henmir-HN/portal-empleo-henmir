@@ -703,10 +703,10 @@ async function handleRegistrationForm(form) {
             try {
                 // Verificar que las librerías estén cargadas
                 if (!window.mammoth) {
-                    throw new Error('La librería mammoth no está disponible. Verifica tu conexión a internet.');
+                    throw new Error('La librería mammoth no está disponible. Verifica tu conexión a internet. Por favor, sube un archivo PDF en su lugar.');
                 }
                 if (!window.jspdf) {
-                    throw new Error('La librería jsPDF no está disponible. Verifica tu conexión a internet.');
+                    throw new Error('La librería jsPDF no está disponible. Verifica tu conexión a internet. Por favor, sube un archivo PDF en su lugar.');
                 }
                 
                 const reader = new FileReader();
@@ -792,7 +792,14 @@ async function handleRegistrationForm(form) {
     try {
         // Convertir el archivo Word a PDF (si es necesario) o usar directamente si es PDF
         if (cvFile && (cvFile.type === 'application/msword' || cvFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
-            // Es un archivo Word, necesita conversión
+            // Es un archivo Word, verificar si las librerías están disponibles
+            if (!window.mammoth || !window.jspdf) {
+                // Las librerías no están disponibles, mostrar mensaje y detener el proceso
+                showToast('Las librerías de conversión no están disponibles. Por favor, convierte tu CV a PDF manualmente y súbelo nuevamente.', 'warning');
+                return;
+            }
+            
+            // Es un archivo Word y las librerías están disponibles, proceder con la conversión
             const processedFormData = await convertWordToPdf(cvFile, formData);
             await sendRegistrationData(processedFormData);
         } else {

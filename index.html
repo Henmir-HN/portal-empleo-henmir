@@ -975,26 +975,59 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" 
-            integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNhynyTiQ5l6+H4pdf8CCeYRyvg+MmQ8D+T8me2NmaxmVflvPbkTayHFQ==" 
-            crossorigin="anonymous" 
-            referrerpolicy="no-referrer"
-            onerror="console.error('Error cargando jsPDF'); alert('Error cargando las librerías necesarias. Por favor recarga la página.');"></script>
+            onerror="console.error('Error cargando jsPDF desde cdnjs'); loadJsPDFBackup();"></script>
     <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js" 
-            onerror="console.error('Error cargando mammoth'); alert('Error cargando las librerías necesarias. Por favor recarga la página.');"></script>
+            onerror="console.error('Error cargando mammoth desde unpkg'); loadMammothBackup();"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Verificar que las librerías se hayan cargado correctamente
-        if (typeof window.jspdf === 'undefined') {
-            console.error('jsPDF no se cargó correctamente');
-        } else {
-            console.log('jsPDF cargado exitosamente');
+        // Funciones de respaldo para cargar librerías alternativas
+        function loadJsPDFBackup() {
+            console.log('Intentando cargar jsPDF desde jsdelivr...');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+            script.onerror = function() {
+                console.error('No se pudo cargar jsPDF desde ningún CDN');
+                showLibraryError('jsPDF');
+            };
+            script.onload = function() {
+                console.log('jsPDF cargado exitosamente desde respaldo');
+            };
+            document.head.appendChild(script);
         }
         
-        if (typeof window.mammoth === 'undefined') {
-            console.error('Mammoth no se cargó correctamente');
-        } else {
-            console.log('Mammoth cargado exitosamente');
+        function loadMammothBackup() {
+            console.log('Intentando cargar mammoth desde jsdelivr...');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js';
+            script.onerror = function() {
+                console.error('No se pudo cargar mammoth desde ningún CDN');
+                showLibraryError('mammoth');
+            };
+            script.onload = function() {
+                console.log('Mammoth cargado exitosamente desde respaldo');
+            };
+            document.head.appendChild(script);
         }
+        
+        function showLibraryError(libraryName) {
+            console.error(`${libraryName} no se pudo cargar`);
+            // No mostrar alert automáticamente, solo log en consola
+        }
+        
+        // Verificar carga después de un pequeño delay para dar tiempo a las librerías
+        setTimeout(function() {
+            if (typeof window.jspdf === 'undefined') {
+                console.warn('jsPDF no se cargó correctamente - la conversión de Word a PDF no estará disponible');
+            } else {
+                console.log('✓ jsPDF cargado exitosamente');
+            }
+            
+            if (typeof window.mammoth === 'undefined') {
+                console.warn('Mammoth no se cargó correctamente - la conversión de Word a PDF no estará disponible');
+            } else {
+                console.log('✓ Mammoth cargado exitosamente');
+            }
+        }, 1000);
     </script>
     <script src="script.js"></script>
 </body>
