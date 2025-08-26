@@ -1009,5 +1009,4 @@ function requestApplication(vacancyId) {
         delete window[callbackName];
         document.body.removeChild(script);
     };
-
 }
